@@ -7,7 +7,7 @@ const DB_PASSWORD = process.env.SQLDB_PASSWORD || "011267";
 const DB_HOST = process.env.SQLDB_HOST || "localhost";
 const DB_DIALECT = process.env.DB_DIALECT || "mysql";
 
-// Create a Sequelize instance
+// تعريف sequelize instance
 const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   host: DB_HOST,
   dialect: DB_DIALECT,
@@ -20,15 +20,5 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
   logging: false,
 });
 
-// Function to authenticate and test the connection
-const testDatabaseConnection = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("Connection to the database has been established successfully.");
-  } catch (error) {
-    console.error("Unable to connect to the database:", error);
-  }
-};
-
-// Export the sequelize instance for use in models
-module.exports = { sequelize, testDatabaseConnection };
+// تصدير sequelize instance
+module.exports = { sequelize };

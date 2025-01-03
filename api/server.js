@@ -1,6 +1,16 @@
-const { testDatabaseConnection } = require("./assets/SQLDB/db");  // Ensure this import is correct
+const { sequelize } = require("./assets/SQLDB/db");
+const User = require("./models/User");
+const bcrypt = require("bcrypt");
+ 
+// Sync database tables
+sequelize.sync({   }) // force: true علشان يعمل drop للجداول ويعيد إنشائها
+  .then(() => {
+    console.log("Database tables have been synced.");
+  })
+  .catch(err => {
+    console.log("Error syncing database:", err);
+  });
 
-testDatabaseConnection();  // Test the database connection
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -9,26 +19,44 @@ const rateLimit = require("express-rate-limit");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const dotenv = require("dotenv");
-const { sequelize } = require("./assets/SQLDB/db");
 
 const userRoutes = require("./routes/userRoutes");
-sequelize.authenticate()
-.then(() => {
-  console.log("Connection to MySQL has been established successfully.");
-})
-.catch((err) => {
-  console.log("Unable to connect to MySQL:", err);
-});
-sequelize.sync({ force: true }).then(() => {
-    console.log("Database tables have been synced.");
-  }).catch(err => {
-    console.log("Error syncing database:", err);
-  });
-  
+ 
+ 
+const instituteRoutes = require("./routes/instituteRoutes");
+
 dotenv.config();
 
 const app = express();
 
+const createSuperAdmin = async () => {
+  try {
+    const superAdminEmail = "super@admin.com";
+    const existingAdmin = await User.findOne({ where: { email: superAdminEmail } });
+
+    if (existingAdmin) {
+      console.log("Super admin account already exists.");
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash("Admin@123456", 10);
+
+    await User.create({
+      username: "super admin",
+      email: superAdminEmail,
+      password: hashedPassword,
+      fullName: "Super Admin",
+      userType: "super_admin",
+    });
+
+    console.log("Super admin account created successfully.");
+  } catch (error) {
+    console.error("Error creating super admin account:", error);
+  }
+};
+
+// Call the function when the server starts
+createSuperAdmin();
 // Security middleware
 app.use(helmet());
 app.use(mongoSanitize());
@@ -54,6 +82,9 @@ app.use(bodyParser.json());
 // Routes
 app.use("/api/users", userRoutes);
  
+ 
+
+app.use("/api/institute", instituteRoutes);
 
 // Start the server
 const PORT = process.env.DEV_API_PORT || 5000;

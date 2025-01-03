@@ -1,7 +1,7 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../assets/SQLDB/db'); // Use your Sequelize instance
+const { sequelize } = require("../assets/SQLDB/db");
+const { DataTypes } = require("sequelize");
 
-const Role = sequelize.define('Role', {
+const Role = sequelize.define("Role", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,

@@ -1,5 +1,5 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../assets/SQLDB/db'); // Use your Sequelize instance
+const { sequelize } = require('../assets/SQLDB/db'); // استيراد sequelize بشكل صحيح
+const { DataTypes } = require('sequelize');
 
 const Department = sequelize.define('Department', {
   id: {
