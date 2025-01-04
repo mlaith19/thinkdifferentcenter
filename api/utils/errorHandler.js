@@ -1,10 +1,11 @@
 const handleError = (error) => {
-    let errorMessage = 'Something went wrong';
-    let statusCode = 500;
-    let errorDetails = {};
-  
-    // Check for specific Sequelize errors
-    if (error.name === 'SequelizeUniqueConstraintError') {
+  let errorMessage = 'Something went wrong';
+  let statusCode = 500;
+  let errorDetails = {};
+
+  // Map error types to their respective handlers
+  const errorHandlers = {
+    SequelizeUniqueConstraintError: () => {
       statusCode = 400; // Bad request for unique constraint errors
       errorMessage = 'Duplicate entry error';
       errorDetails = {
@@ -12,43 +13,48 @@ const handleError = (error) => {
         value: error.errors[0].value,
         message: error.errors[0].message,
       };
-    } else if (error.name === 'SequelizeValidationError') {
+    },
+    SequelizeValidationError: () => {
       statusCode = 400;
       errorMessage = 'Validation error';
       errorDetails = error.errors.map(err => ({
         field: err.path,
         message: err.message,
       }));
-    } else if (error.name === 'SequelizeDatabaseError') {
+    },
+    SequelizeDatabaseError: () => {
       statusCode = 500;
       errorMessage = 'Database error';
       errorDetails = { message: error.message };
-    } else if (error.name === 'ValidationError') {
+    },
+    ValidationError: () => {
       statusCode = 400;
       errorMessage = 'Validation error';
       errorDetails = { message: error.message };
-    } else if (error instanceof SyntaxError) {
+    },
+    SyntaxError: () => {
       statusCode = 400;
       errorMessage = 'Bad request syntax';
       errorDetails = { message: error.message };
-    } else if (error instanceof Error) {
+    },
+    default: () => {
       // Catch generic JavaScript errors
       statusCode = 500;
-      errorMessage = error.message;
-      errorDetails = { stack: error.stack };
-    } else {
-      // General fallback for unexpected errors
-      statusCode = 500;
       errorMessage = error.message || errorMessage;
-    }
-  
-    // Make error response object uniform and reusable
-    return {
-      statusCode,
-      errorMessage,
-      errorDetails,
-    };
+      errorDetails = { stack: error.stack };
+    },
   };
-  
-  module.exports = { handleError };
-  
+
+  // Use the appropriate handler based on the error type
+  const handler = errorHandlers[error.name] || errorHandlers.default;
+  handler();
+
+  // Make error response object uniform and reusable
+  return {
+    statusCode,
+    errorMessage,
+    errorDetails,
+  };
+};
+
+module.exports = { handleError };

@@ -1,32 +1,32 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../assets/SQLDB/db");
 
-const RolePermission = sequelize.define("RolePermission", {
+const TeacherPerformance = sequelize.define("TeacherPerformance", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  roleId: {
+  teacherId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: "Roles",
+      model: "Users",
       key: "id",
     },
   },
-  permissionId: {
-    type: DataTypes.INTEGER,
+  totalTeachingHours: {
+    type: DataTypes.FLOAT,
     allowNull: false,
-    references: {
-      model: "Permissions",
-      key: "id",
-    },
+  },
+  averageRating: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
   },
 }, {
   timestamps: true,
   paranoid: true,
-  tableName: "RolePermissions",
+  tableName: "TeacherPerformance",
 });
 
-module.exports = RolePermission;
+module.exports = TeacherPerformance;

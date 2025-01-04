@@ -1,5 +1,5 @@
-const { sequelize } = require("../assets/SQLDB/db");
 const { DataTypes } = require("sequelize");
+const { sequelize } = require("../assets/SQLDB/db");
 
 const User = sequelize.define("User", {
   id: {
@@ -30,11 +30,6 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  userType: {
-    type: DataTypes.ENUM("super_admin", "institute_admin", "secretary", "teacher", "student", "accountant"),
-    allowNull: false,
-    defaultValue: "student",
-  },
   instituteId: {
     type: DataTypes.INTEGER,
     allowNull: true,
@@ -47,7 +42,7 @@ const User = sequelize.define("User", {
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: "Branches", // reference to Branch model
+      model: "Branches",
       key: "id",
     },
   },

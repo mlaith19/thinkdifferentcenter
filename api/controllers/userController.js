@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Role = require("../models/role");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { handleError } = require("../utils/errorHandler");
@@ -6,7 +7,7 @@ const { handleError } = require("../utils/errorHandler");
 // توليد التوكن
 const generateToken = (user) => {
   return jwt.sign(
-    { userId: user.id, email: user.email, userType: user.userType },
+    { userId: user.id, email: user.email },
     process.env.JWT_SECRET || "jwt_secret_key",
     { expiresIn: "1h" }
   );
@@ -14,43 +15,41 @@ const generateToken = (user) => {
 
 // إنشاء حساب جديد
 const createUser = async (req, res) => {
-  const { username, email, password, fullName, userType, instituteId } = req.body;
+  const { username, email, password, fullName, roleId, instituteId } = req.body;
   const creator = req.user;
 
   try {
-    if (userType === "super_admin" ) {
-      return res.status(403).json({ message: "What are you doing?" });
-    }
-    if (userType === "institute_admin" && creator.userType !== "super_admin") {
-      return res.status(403).json({ message: "Only super admins can create institute admins." });
+    // التحقق من أن المستخدم الذي ينشئ الحساب لديه الصلاحية
+    const creatorRoles = await creator.getRoles();
+    const isSuperAdmin = creatorRoles.some(role => role.name === "super_admin");
+    const isInstituteAdmin = creatorRoles.some(role => role.name === "institute_admin");
+
+    if (!isSuperAdmin && !isInstituteAdmin) {
+      return res.status(403).json({ message: "You do not have permission to create users." });
     }
 
-    if (
-      creator.userType === "institute_admin" &&
-      userType !== "student" &&
-      userType !== "teacher" &&
-      userType !== "secretary"
-    ) {
-      return res
-        .status(403)
-        .json({ message: "Institute admins can only create institute-related accounts." });
-    }
-
+    // التحقق من أن البريد الإلكتروني غير مستخدم
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: "Email already exists." });
     }
 
+    // إنشاء المستخدم
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
       fullName,
-      userType,
-      instituteId: creator.userType === "institute_admin" ? creator.instituteId : instituteId,
+      instituteId: isInstituteAdmin ? creator.instituteId : instituteId,
     });
+
+    // تعيين الدور للمستخدم
+    const role = await Role.findByPk(roleId);
+    if (!role) {
+      return res.status(404).json({ message: "Role not found." });
+    }
+    await newUser.addRole(role);
 
     res.status(201).json({
       message: "User created successfully.",
@@ -67,7 +66,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email }, include: [Role] });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -78,8 +77,9 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.status(200).json({ message: "Login successful.", token,userType: user.userType, });
+    res.status(200).json({ message: "Login successful.", token, roles: user.Roles });
   } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };
@@ -87,10 +87,11 @@ const loginUser = async (req, res) => {
 // تسجيل الخروج
 const logoutUser = async (req, res) => {
   try {
-    // للتسجيل الخروج يتم عادةً حذف التوكن من العميل
     res.status(200).json({ message: "Logout successful." });
   } catch (error) {
-    res.status(statusCode).json({ message: errorMessage, errorDetails });  }
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage, errorDetails });
+  }
 };
 
 // حذف المستخدم
@@ -100,23 +101,22 @@ const deleteUser = async (req, res) => {
 
   try {
     const userToDelete = await User.findByPk(userId);
-
     if (!userToDelete) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    if (
-      requester.userType !== "super_admin" &&
-      (userToDelete.userType === "institute_admin" || userToDelete.userType === "super_admin")
-    ) {
-      return res
-        .status(403)
-        .json({ message: "You do not have permission to delete this user." });
+    // التحقق من أن المستخدم الذي يحذف لديه الصلاحية
+    const requesterRoles = await requester.getRoles();
+    const isSuperAdmin = requesterRoles.some(role => role.name === "super_admin");
+
+    if (!isSuperAdmin) {
+      return res.status(403).json({ message: "You do not have permission to delete this user." });
     }
 
     await userToDelete.destroy();
     res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };

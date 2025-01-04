@@ -1,32 +1,33 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../assets/SQLDB/db");
 
-const RolePermission = sequelize.define("RolePermission", {
+const Points = sequelize.define("Points", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
   },
-  roleId: {
+  studentId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: "Roles",
+      model: "Users",
       key: "id",
     },
   },
-  permissionId: {
+  points: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: "Permissions",
-      key: "id",
-    },
+    defaultValue: 0,
+  },
+  reason: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
 }, {
   timestamps: true,
   paranoid: true,
-  tableName: "RolePermissions",
+  tableName: "Points",
 });
 
-module.exports = RolePermission;
+module.exports = Points;

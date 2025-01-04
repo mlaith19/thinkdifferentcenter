@@ -2,16 +2,20 @@ const express = require("express");
 const { body, param } = require("express-validator");
 const userController = require("../controllers/userController");
 const { authenticate } = require("../middlewares/auth_JWT");
+const { authorizeSuperAdmin } = require("../middlewares/authorizeSuperAdmin");
+
 const router = express.Router();
 
 // إنشاء مستخدم جديد
 router.post(
   "/create",
   authenticate,
+  authorizeSuperAdmin,
   [
     body("username").notEmpty().withMessage("Username is required."),
     body("email").isEmail().withMessage("Valid email is required."),
     body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters."),
+    body("roleId").isInt().withMessage("Role ID must be a valid integer."),
   ],
   userController.createUser
 );
@@ -33,6 +37,7 @@ router.post("/logout", authenticate, userController.logoutUser);
 router.delete(
   "/delete/:userId",
   authenticate,
+  authorizeSuperAdmin,
   [
     param("userId").isInt().withMessage("User ID must be a valid integer."),
   ],
@@ -40,10 +45,3 @@ router.delete(
 );
 
 module.exports = router;
-/*
-  'super admin', 
-  'super@admin.com', 
-  '$2b$10$44ac7xaxxbQHKX.WLpHQLumUHUE4jdhd0123G4x39TJaYFjoFEKN6', 
-  'super admin', 
-  'super_admin', 
-*/
