@@ -1,23 +1,29 @@
+// ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { decodeToken } from "../utils/decodeToken"; // استيراد وظيفة فك التشفير
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user, loading } = useAuth();
+  const token = localStorage.getItem("token"); // جلب الـ token من localStorage
 
-  if (loading) {
-    return <div>Loading...</div>; // Show a loading spinner or message
+  if (!token) {
+    return <Navigate to="/login" replace />; // إذا لم يكن هناك token، توجيه إلى صفحة تسجيل الدخول
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  const decodedToken = decodeToken(token); // فك تشفير الـ token
+
+  if (!decodedToken) {
+    return <Navigate to="/login" replace />; // إذا فشل فك التشفير، توجيه إلى صفحة تسجيل الدخول
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+  const userRole = decodedToken.role; // استخراج الـ role من الـ token
+
+  // إذا كانت الصفحة تتطلب أدوارًا محددة ولم يكن المستخدم لديه الدور المطلوب
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/dashboard" replace />; // توجيه إلى الداشبورد
   }
 
-  return children;
+  return children; // إذا كان كل شيء صحيحًا، عرض الصفحة المطلوبة
 };
 
 export default ProtectedRoute;

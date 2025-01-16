@@ -1,3 +1,4 @@
+// App.js
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -14,7 +15,9 @@ import Notifications from "./pages/Notifications";
 import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import ErrorPage from "./components/ErrorPage";
+import CreateInstitute from "./pages/CreateInstitute";
 function App() {
   return (
     <AuthProvider>
@@ -41,8 +44,16 @@ function App() {
           <Route
             path="/institutes"
             element={
-              <ProtectedRoute allowedRoles={["super_admin", "institute_admin"]}>
+              <ProtectedRoute allowedRoles={["super_admin", ]}>
                 <InstituteManagement />
+              </ProtectedRoute>
+            }
+          />
+            <Route
+            path="/institutes/create"
+            element={
+              <ProtectedRoute allowedRoles={["super_admin"]}>
+                <CreateInstitute /> {/* Route للصفحة الجديدة */}
               </ProtectedRoute>
             }
           />
@@ -65,7 +76,7 @@ function App() {
           <Route
             path="/students"
             element={
-              <ProtectedRoute allowedRoles={["student"]}>
+              <ProtectedRoute allowedRoles={["student", "secretary"]}>
                 <StudentManagement />
               </ProtectedRoute>
             }
@@ -102,6 +113,23 @@ function App() {
               </ProtectedRoute>
             }
           />
+            <Route
+            path="/superAdminDashboard"
+            element={
+              <ProtectedRoute>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          />    <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={["super_admin"]}>
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+      <Route path="/404" element={<ErrorPage />} />
+      <Route path="*" element={<ErrorPage />} />
         </Routes>
       </Router>
     </AuthProvider>

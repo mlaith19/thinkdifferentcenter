@@ -1,3 +1,4 @@
+// AuthContext.jsx
 import React, { createContext, useState, useEffect } from "react";
 import api from "../services/api";
 
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          const response = await api.get("/users/me"); // Replace with your backend endpoint
+          const response = await api.get("/users/me");  
           setUser(response.data);
         }
       } catch (error) {
@@ -27,11 +28,42 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (email, password) => {
+  const login = async (email, password, navigateCallback) => {
     try {
       const response = await api.post("/users/login", { email, password });
       localStorage.setItem("token", response.data.token);
-      setUser(response.data.user);
+
+      // هنا بنخزن الـ role في الـ state
+      setUser({
+        ...response.data.user,
+        role: response.data.role, // هنا بنخزن الـ role
+      });
+
+      // هنا بنودي المستخدم على الصفحة المناسبة بناءً على الـ role
+      if (navigateCallback) {
+        switch (response.data.role) {
+          case "super_admin":
+            navigateCallback("/superAdminDashboard"); // لو سوبر أدمن، اوديه على إدارة المستخدمين
+            break;
+          case "institute_admin":
+            navigateCallback("/institutes"); // لو مدير معهد، اوديه على إدارة المعاهد
+            break;
+          case "secretary":
+            navigateCallback("/students"); // لو سكرتير، اوديه على إدارة الطلاب
+            break;
+          case "teacher":
+            navigateCallback("/sessions"); // لو مدرس، اوديه على إدارة الحصص
+            break;
+          case "student":
+            navigateCallback("/students"); // لو طالب، اوديه على صفحة الطالب
+            break;
+          case "accountant":
+            navigateCallback("/accountants"); // لو محاسب، اوديه على إدارة المحاسبين
+            break;
+          default:
+            navigateCallback("/dashboard"); // لو الدور مش معروف، اوديه على الداشبورد
+        }
+      }
     } catch (error) {
       console.error("Login failed:", error);
       throw error;

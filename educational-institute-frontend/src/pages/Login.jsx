@@ -12,10 +12,15 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate("/dashboard");
+      await login(email, password, navigate); 
+     
     } catch (error) {
-      setError("Login failed. Please check your credentials.");
+      // Check if the error response contains a specific message from the backend
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message); // Display the backend error message
+      } else {
+        setError("Login failed. Please check your credentials."); // Fallback error message
+      }
       console.error("Login failed:", error);
     }
   };
