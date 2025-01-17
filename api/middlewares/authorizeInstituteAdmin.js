@@ -1,9 +1,9 @@
-const authorizeSuperAdmin = async (req, res, next) => {
+const authorizeInstitutionAdmin = async (req, res, next) => {
     const userId = req.user.userId;
   
     try {
       const user = await User.findByPk(userId, { include: [Role] });
-      if (!user || !user.Roles.some(role => role.name === "super_admin")) {
+      if (!user || !user.Roles.some(role => role.name === "institute_admin")) {
         return res.status(403).json({ message: "You are not authorized to perform this action." });
       }
   
@@ -13,4 +13,4 @@ const authorizeSuperAdmin = async (req, res, next) => {
     }
   };
   
-  module.exports = { authorizeSuperAdmin };
+  module.exports = { authorizeInstitutionAdmin };

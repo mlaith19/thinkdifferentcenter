@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
             navigateCallback("/superAdminDashboard"); // لو سوبر أدمن، اوديه على إدارة المستخدمين
             break;
           case "institute_admin":
-            navigateCallback("/institutes"); // لو مدير معهد، اوديه على إدارة المعاهد
+            navigateCallback("/InstituteAdminDashboard"); // لو مدير معهد، اوديه على إدارة المعاهد
             break;
           case "secretary":
             navigateCallback("/students"); // لو سكرتير، اوديه على إدارة الطلاب

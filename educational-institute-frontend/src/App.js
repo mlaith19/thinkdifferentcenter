@@ -18,6 +18,8 @@ import { AuthProvider } from "./context/AuthContext";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ErrorPage from "./components/ErrorPage";
 import CreateInstitute from "./pages/CreateInstitute";
+import InstituteAdminDashboard from "./pages/InstituteAdminDashboard";
+import InstitutionUsers from "./pages/InstitutionUsers";
 function App() {
   return (
     <AuthProvider>
@@ -42,7 +44,7 @@ function App() {
             }
           />
           <Route
-            path="/institutes"
+            path="/InstituteManagement"
             element={
               <ProtectedRoute allowedRoles={["super_admin", ]}>
                 <InstituteManagement />
@@ -120,11 +122,28 @@ function App() {
                 <SuperAdminDashboard />
               </ProtectedRoute>
             }
-          />    <Route
+          />   
+           <Route
           path="/users"
           element={
             <ProtectedRoute allowedRoles={["super_admin"]}>
               <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path="/InstituteAdminDashboard"
+          element={
+            <ProtectedRoute allowedRoles={["institute_admin"]}>
+              <InstituteAdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/institution-users"
+          element={
+            <ProtectedRoute allowedRoles={["institute_admin","super_admin"]}>
+              <InstitutionUsers />
             </ProtectedRoute>
           }
         />

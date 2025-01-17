@@ -44,7 +44,7 @@ app.use(bodyParser.json());
 // Database synchronization
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ force: true });  
+    await sequelize.sync({   });  
     console.log("Database tables have been synced.");
   } catch (err) {
     console.error("Error syncing database:", err);
@@ -55,6 +55,8 @@ const syncDatabase = async () => {
 const createSuperAdmin = async () => {
   try {
     const superAdminEmail = "super@admin.com";
+
+    // Check if a super admin already exists
     const existingAdmin = await User.findOne({ where: { email: superAdminEmail } });
 
     if (existingAdmin) {
@@ -62,14 +64,16 @@ const createSuperAdmin = async () => {
       return;
     }
 
+    // Hash the password for security
     const hashedPassword = await bcrypt.hash("Admin@123456", 10);
 
+    // Create the super admin account
     await User.create({
       username: "super admin",
       email: superAdminEmail,
       password: hashedPassword,
       fullName: "Super Admin",
-      userType: "super_admin",
+      role: "super_admin", // Directly assign the role
     });
 
     console.log("Super admin account created successfully.");
@@ -77,6 +81,7 @@ const createSuperAdmin = async () => {
     console.error("Error creating super admin account:", error);
   }
 };
+
 
 // Initialize the server
 const initializeServer = async () => {

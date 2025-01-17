@@ -7,66 +7,63 @@ const { handleError } = require("../utils/errorHandler");
 // توليد التوكن
 const generateToken = (user) => {
   return jwt.sign(
-    { userId: user.id, email: user.email },
+    { userId: user.id, email: user.email,role: user.role,instituteId: user.instituteId,branchId: user.branchId},
     process.env.JWT_SECRET || "jwt_secret_key",
-    { expiresIn: "1h" }
+    { expiresIn: "500h" }
   );
 };
 
 // إنشاء حساب جديد
 const createUser = async (req, res) => {
-  const { username, email, password, fullName, roleId, instituteId } = req.body;
+  const { username, email, password, fullName, role, instituteId } = req.body;
   const creator = req.user;
 
   try {
-    // التحقق من أن المستخدم الذي ينشئ الحساب لديه الصلاحية
-    const creatorRoles = await creator.getRoles();
-    const isSuperAdmin = creatorRoles.some(role => role.name === "super_admin");
-    const isInstituteAdmin = creatorRoles.some(role => role.name === "institute_admin");
-
-    if (!isSuperAdmin && !isInstituteAdmin) {
+    // Check if the creator has permission
+    if (!["super_admin", "institute_admin"].includes(creator.role)) {
       return res.status(403).json({ message: "You do not have permission to create users." });
     }
 
-    // التحقق من أن البريد الإلكتروني غير مستخدم
+    // Check if the email is already in use
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: "Email already exists." });
     }
 
-    // إنشاء المستخدم
+    // Hash the password and create the user
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       username,
       email,
       password: hashedPassword,
       fullName,
-      instituteId: isInstituteAdmin ? creator.instituteId : instituteId,
+      role,
+      instituteId: creator.role === "institute_admin" ? creator.instituteId : instituteId,
     });
-
-    // تعيين الدور للمستخدم
-    const role = await Role.findByPk(roleId);
-    if (!role) {
-      return res.status(404).json({ message: "Role not found." });
-    }
-    await newUser.addRole(role);
 
     res.status(201).json({
       message: "User created successfully.",
-      user: { id: newUser.id, username: newUser.username, email: newUser.email, fullName: newUser.fullName },
+      user: {
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+      },
     });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };
-
 // تسجيل الدخول
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ where: { email }, include: [Role] });
+    // Find the user
+    const user = await User.findOne({ where: { email } });
+
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -76,8 +73,14 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials." });
     }
 
+    // Generate token
     const token = generateToken(user);
-    res.status(200).json({ message: "Login successful.", token, roles: user.Roles });
+
+    res.status(200).json({
+      message: "Login successful.",
+      token,
+      role: user.role, // Fetch role directly from the user record
+    });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({ message: errorMessage, errorDetails });
@@ -88,6 +91,104 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   try {
     res.status(200).json({ message: "Logout successful." });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage, errorDetails });
+  }
+};
+const getAllUsers = async (req, res) => {
+  try {
+    // Fetch all users along with their associated roles and institutes
+    const users = await User.findAll({
+      attributes: ["id", "username", "email", "fullName", "role", "instituteId","isActive","branchId","createdAt",],
+     
+    });
+
+    res.status(200).json({
+      succeed: true,
+      message: "Users fetched successfully.",
+      data: users,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage, errorDetails });
+  }
+};
+const getUsersByInstituteId = async (req, res) => {
+  const requester = req.user;
+
+  try {
+    // Restrict access to super_admin and institute_admin
+    if (!["super_admin", "institute_admin"].includes(requester.role)) {
+      return res.status(403).json({ message: "You are not authorized to perform this action." });
+    }
+
+    const { instituteId: queryInstituteId } = req.query; // Get instituteId from query params
+    const instituteId = requester.instituteId || queryInstituteId; // Use token's instituteId or query param
+
+    let users;
+
+    if (instituteId) {
+      // Fetch users by instituteId
+      users = await User.findAll({
+        where: { instituteId },
+        attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt"],
+      });
+    } else {
+      // Fetch all users if instituteId is null
+      users = await User.findAll({
+        attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt", "instituteId"],
+      });
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: instituteId
+        ? `Users fetched successfully for institute ID ${instituteId}.`
+        : "All users fetched successfully.",
+      data: users,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage, errorDetails });
+  }
+};
+
+const getUsersByBranchId = async (req, res) => {
+  const requester = req.user;
+
+  try {
+    // Restrict access to super_admin and institute_admin
+    if (!["super_admin", "institute_admin"].includes(requester.role)) {
+      return res.status(403).json({ message: "You are not authorized to perform this action." });
+    }
+
+    const { branchId: queryBranchId } = req.query; // Get branchId from query params
+    const branchId = requester.branchId || queryBranchId; // Use token's branchId or query param
+
+    let users;
+
+    if (branchId) {
+      // Fetch users by branchId
+      users = await User.findAll({
+        where: { branchId },
+        attributes: ["id", "username", "email", "fullName", "role", "isActive", "instituteId", "createdAt"],
+      });
+    } else {
+      // Fetch all users if branchId is null
+      users = await User.findAll({
+        attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt", "instituteId"],
+      });
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: branchId
+        ? `Users fetched successfully for branch ID ${branchId}.`
+        : "All users fetched successfully.",
+      data: users,
+    });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({ message: errorMessage, errorDetails });
@@ -105,11 +206,7 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // التحقق من أن المستخدم الذي يحذف لديه الصلاحية
-    const requesterRoles = await requester.getRoles();
-    const isSuperAdmin = requesterRoles.some(role => role.name === "super_admin");
-
-    if (!isSuperAdmin) {
+    if (requester.role !== "super_admin") {
       return res.status(403).json({ message: "You do not have permission to delete this user." });
     }
 
@@ -121,9 +218,13 @@ const deleteUser = async (req, res) => {
   }
 };
 
+
 module.exports = {
   createUser,
   loginUser,
   logoutUser,
   deleteUser,
+  getAllUsers,
+  getUsersByInstituteId,
+  getUsersByBranchId,
 };

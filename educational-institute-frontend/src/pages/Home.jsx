@@ -1,10 +1,19 @@
-// pages/Home.jsx
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { decodeToken } from "../utils/decodeToken";
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  Paper,
+  useTheme,
+} from "@mui/material";
+import SchoolIcon from "@mui/icons-material/School"; // Import school icon
 
 const Home = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -18,7 +27,7 @@ const Home = () => {
             navigate("/superAdminDashboard");
             break;
           case "institute_admin":
-            navigate("/institutes");
+            navigate("/InstituteAdminDashboard");
             break;
           case "secretary":
             navigate("/students");
@@ -40,15 +49,72 @@ const Home = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold mb-4">Welcome to the "Think" Institute Management System</h1>
-      <p className="text-lg mb-8">Manage your institute efficiently with our platform.</p>
-      <div className="space-x-4">
-        <Link to="/login" className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">
+    <Container
+      maxWidth="lg"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          p: 6,
+          borderRadius: 2,
+          textAlign: "center",
+          bgcolor: "background.paper",
+          maxWidth: "800px",
+          width: "100%",
+        }}
+      >
+        {/* App Name and Icon */}
+        <Box sx={{ mb: 4 }}>
+          <SchoolIcon sx={{ fontSize: 60, color: "primary.main" }} />
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: "bold",
+              color: "primary.main",
+              mt: 2,
+              fontFamily: "monospace",
+              letterSpacing: ".3rem",
+            }}
+          >
+            Think
+          </Typography>
+          <Typography variant="h5" color="text.secondary" sx={{ mt: 1 }}>
+            Institute Management System
+          </Typography>
+        </Box>
+
+        {/* Welcome Message */}
+        <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
+          Welcome to Think
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+          Manage your institute efficiently with our platform.
+        </Typography>
+
+        {/* Login Button */}
+        <Button
+          component={Link}
+          to="/login"
+          variant="contained"
+          size="large"
+          sx={{
+            py: 1.5,
+            px: 4,
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+          }}
+        >
           Login
-        </Link>
-      </div>
-    </div>
+        </Button>
+      </Paper>
+    </Container>
   );
 };
 

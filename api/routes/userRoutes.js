@@ -43,5 +43,29 @@ router.delete(
   ],
   userController.deleteUser
 );
+router.get(
+  "/all",
+  authenticate,          // Authenticate the user
+  authorizeSuperAdmin,   // Ensure only super admin can view all users
+  userController.getAllUsers // Controller to handle fetching all users
+);
 
+router.get(
+  "/institute",
+  authenticate,
+  [
+    param("instituteId").isInt().withMessage("Institute ID must be a valid integer."),
+  ],
+  userController.getUsersByInstituteId
+);
+
+// Get users by branchId
+router.get(
+  "/branch",
+  authenticate,
+  [
+    param("branchId").isInt().withMessage("Branch ID must be a valid integer."),
+  ],
+  userController.getUsersByBranchId
+);
 module.exports = router;

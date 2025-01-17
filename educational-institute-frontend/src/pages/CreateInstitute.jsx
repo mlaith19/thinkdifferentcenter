@@ -1,4 +1,3 @@
-// src/pages/CreateInstitute.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +11,11 @@ import {
   Alert,
   InputAdornment,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   School as SchoolIcon,
@@ -31,8 +35,10 @@ const CreateInstitute = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showTrialPopup, setShowTrialPopup] = useState(false); // State for trial popup
+  const [formValues, setFormValues] = useState(null); // Store form values for submission after confirmation
 
-  // تحقق من صحة الحقول باستخدام Yup
+  // Validation schema
   const validationSchema = Yup.object({
     name: Yup.string().required("Institute name is required"),
     email: Yup.string()
@@ -42,6 +48,13 @@ const CreateInstitute = () => {
       .min(8, "Password must be at least 8 characters")
       .required("Password is required"),
     adminName: Yup.string().required("Admin name is required"),
+    startDate: Yup.date().nullable().typeError("Invalid date format"),
+    endDate: Yup.date()
+      .nullable()
+      .min(Yup.ref("startDate"), "End date must be after start date")
+      .typeError("Invalid date format"),
+    address: Yup.string().required("Address is required"),
+    phone: Yup.string().required("Phone is required"),
   });
 
   const formik = useFormik({
@@ -50,30 +63,46 @@ const CreateInstitute = () => {
       email: "",
       password: "",
       adminName: "",
+      startDate: "",
+      endDate: "",
+      address: "",
+      phone: "",
     },
     validationSchema,
     onSubmit: async (values) => {
-      setLoading(true);
-      setError("");
-
-      try {
-        const response = await api.post("/institute/create", values);
-        if (response.data.succeed) {
-            console.log(response.data);
-          setSuccess(true);
-          setTimeout(() => {
-            navigate("/superAdminDashboard"); // توجيه المستخدم إلى صفحة المعاهد بعد النجاح
-          }, 1500); // تأخير التوجيه لعرض رسالة النجاح
-        }
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "Failed to create institute. Please try again."
-        );
-      } finally {
-        setLoading(false);
+      // Check if dates are empty
+      if (!values.startDate || !values.endDate) {
+        setFormValues(values); // Store form values
+        setShowTrialPopup(true); // Show trial popup
+        return;
       }
+
+      // If dates are provided, submit the form
+      submitForm(values);
     },
   });
+
+  const submitForm = async (values) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await api.post("/institute/create", values);
+      if (response.data.succeed) {
+        console.log(response.data);
+        setSuccess(true);
+        setTimeout(() => {
+          navigate("/superAdminDashboard"); // Redirect after success
+        }, 1500);
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to create institute. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCloseSnackbar = () => {
     setError("");
@@ -82,6 +111,16 @@ const CreateInstitute = () => {
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleTrialPopupConfirm = () => {
+    setShowTrialPopup(false); // Close the popup
+    submitForm(formValues); // Submit the form with stored values
+  };
+
+  const handleTrialPopupCancel = () => {
+    setShowTrialPopup(false); // Close the popup
+    setFormValues(null); // Clear stored values
   };
 
   return (
@@ -175,6 +214,60 @@ const CreateInstitute = () => {
             helperText={formik.touched.adminName && formik.errors.adminName}
             sx={{ mb: 3 }}
           />
+          <TextField
+            fullWidth
+            label="Start Date"
+            name="startDate"
+            type="date"
+            value={formik.values.startDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            margin="normal"
+            InputLabelProps={{ shrink: true }}
+            error={formik.touched.startDate && Boolean(formik.errors.startDate)}
+            helperText={formik.touched.startDate && formik.errors.startDate}
+            sx={{ mb: 3 }}
+          />
+          <TextField
+            fullWidth
+            label="End Date"
+            name="endDate"
+            type="date"
+            value={formik.values.endDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            margin="normal"
+            InputLabelProps={{ shrink: true }}
+            error={formik.touched.endDate && Boolean(formik.errors.endDate)}
+            helperText={formik.touched.endDate && formik.errors.endDate}
+            sx={{ mb: 3 }}
+          />
+          <TextField
+            fullWidth
+            label="Address"
+            name="address"
+            value={formik.values.address}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            margin="normal"
+            required
+            error={formik.touched.address && Boolean(formik.errors.address)}
+            helperText={formik.touched.address && formik.errors.address}
+            sx={{ mb: 3 }}
+          />
+          <TextField
+            fullWidth
+            label="Phone"
+            name="phone"
+            value={formik.values.phone}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            margin="normal"
+            required
+            error={formik.touched.phone && Boolean(formik.errors.phone)}
+            helperText={formik.touched.phone && formik.errors.phone}
+            sx={{ mb: 3 }}
+          />
 
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
@@ -196,7 +289,7 @@ const CreateInstitute = () => {
         </form>
       </Box>
 
-      {/* رسالة النجاح */}
+      {/* Success message */}
       <Snackbar
         open={success}
         autoHideDuration={3000}
@@ -208,7 +301,7 @@ const CreateInstitute = () => {
         </Alert>
       </Snackbar>
 
-      {/* رسالة الخطأ */}
+      {/* Error message */}
       <Snackbar
         open={!!error}
         autoHideDuration={6000}
@@ -219,6 +312,24 @@ const CreateInstitute = () => {
           {error}
         </Alert>
       </Snackbar>
+
+      {/* Trial Popup */}
+      <Dialog open={showTrialPopup} onClose={handleTrialPopupCancel}>
+        <DialogTitle>No Dates Provided</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            By not providing start and end dates, this institution will be given a 1-month trial period. Do you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleTrialPopupCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleTrialPopupConfirm} color="primary" autoFocus>
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
