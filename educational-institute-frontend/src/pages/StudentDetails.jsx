@@ -40,7 +40,7 @@ const StudentDetails = () => {
     name: "ATEF ABRAHEM",
     id: "123456779",
     phone: "0500000000",
-    religion: "Islam",
+    religion: "none",
     birthDate: "2000-01-01",
     courses: [
       {

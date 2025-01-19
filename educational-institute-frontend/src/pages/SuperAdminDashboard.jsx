@@ -32,6 +32,7 @@ import {
   Business as BusinessIcon,
 } from "@mui/icons-material";
 import Navbar from "../components/Navbar"; // Navbar component
+import AddIcon from "@mui/icons-material/Add"; // Import the AddIcon
 
 const SuperAdminDashboard = () => {
   const navigate = useNavigate();
@@ -265,7 +266,15 @@ const SuperAdminDashboard = () => {
           </>
         )}
 
-        <FloatingActionButton  />
+        {/* Floating Action Button */}
+        <FloatingActionButton
+          onClick={() => {
+            // Navigate to the "/institutes/create" route
+            navigate("/institutes/create");
+          }}
+          icon={<AddIcon />} // Use the appropriate icon
+          label="Add Institute" // Customize the label
+        />
       </Box>
 
       {/* Snackbar for Notifications */}

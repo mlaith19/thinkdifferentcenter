@@ -305,8 +305,7 @@ const InstitutionUsers = () => {
                 setSelectedUser({ ...selectedUser, role: e.target.value })
               }
             >
-              <FormControlLabel value="super_admin" control={<Radio />} label="Super Admin" />
-              <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
+               <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
               <FormControlLabel value="secretary" control={<Radio />} label="Secretary" />
               <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
               <FormControlLabel value="student" control={<Radio />} label="Student" />
@@ -369,8 +368,7 @@ const InstitutionUsers = () => {
                   value={newUser.role}
                   onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
                 >
-                  <FormControlLabel value="super_admin" control={<Radio />} label="Super Admin" />
-                  <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
+                   <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
                   <FormControlLabel value="secretary" control={<Radio />} label="Secretary" />
                   <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
                   <FormControlLabel value="student" control={<Radio />} label="Student" />

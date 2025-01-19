@@ -21,6 +21,9 @@ import CreateInstitute from "./pages/CreateInstitute";
 import InstituteAdminDashboard from "./pages/InstituteAdminDashboard";
 import InstitutionUsers from "./pages/InstitutionUsers";
 import StudentDetails from "./pages/StudentDetails";
+import CourseManageDetails from "./pages/CourseManageDetails"; 
+import ReportsScreen from "./pages/InstituteReportsManage";
+
 function App() {
   return (
     <AuthProvider>
@@ -83,7 +86,14 @@ function App() {
                 <SessionManagement />
               </ProtectedRoute>
             }
-          />
+          />   <Route
+          path="/course-manage-details/:courseId"
+          element={
+            <ProtectedRoute allowedRoles={["institute_admin"]}>
+              <CourseManageDetails />
+            </ProtectedRoute>
+          }
+        />
           <Route
             path="/students"
             element={
@@ -156,7 +166,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+   <Route
+          path="/reports"
+          element={
+            <ProtectedRoute allowedRoles={["institute_admin","super_admin"]}>
+              <ReportsScreen />
+            </ProtectedRoute>
+          }
+        />
 
       <Route path="/404" element={<ErrorPage />} />
       <Route path="*" element={<ErrorPage />} />
