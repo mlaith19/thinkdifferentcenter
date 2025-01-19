@@ -39,7 +39,11 @@ router.post(
     authorizeSuperAdmin,   // Ensure only super admin can delete
     instituteController.deleteAllInstitutes // Controller to handle deletion
   );
-
+  router.get(
+    "/branch",
+    authenticate,        
+     instituteController.getBranchesByInstituteId  
+  );
   router.delete(
     "/:id", 
     authenticate,          // Authenticate the user

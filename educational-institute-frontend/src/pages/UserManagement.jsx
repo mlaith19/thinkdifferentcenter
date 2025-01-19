@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import api from "../services/api";
 import {
   Box,
@@ -20,6 +21,12 @@ import {
   Button,
   Fab,
   Chip,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  Grid, // Added Grid for better layout
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -28,7 +35,7 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 
-const UserManagement = () => {
+const InstitutionUsers = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -39,16 +46,19 @@ const UserManagement = () => {
     email: "",
     password: "",
     role: "",
+    instituteId: "",
+    branchId: "",
   });
   const [error, setError] = useState("");
 
+  // Fetch users from the API
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/users/all");
+      const response = await api.get("/users/institute");
       setUsers(response.data.data);
     } catch (error) {
       setError("Failed to fetch users.");
@@ -56,18 +66,21 @@ const UserManagement = () => {
     }
   };
 
+  // Handle search input
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
+  // Open edit dialog for a user
   const handleEditClick = (user) => {
     setSelectedUser(user);
     setEditDialogOpen(true);
   };
 
+  // Save edited user details
   const handleEditSave = async () => {
     try {
-      await api.put(`/users/update/${selectedUser.id}`, selectedUser);
+      await axios.put(`http://localhost:5000/api/users/${selectedUser.id}`, selectedUser);
       fetchUsers();
       setEditDialogOpen(false);
     } catch (error) {
@@ -76,9 +89,10 @@ const UserManagement = () => {
     }
   };
 
+  // Delete a user
   const handleDeleteUser = async (userId) => {
     try {
-      await api.delete(`/users/delete/${userId}`);
+      await axios.delete(`http://localhost:5000/api/users/${userId}`);
       fetchUsers();
     } catch (error) {
       setError("Failed to delete user.");
@@ -86,10 +100,11 @@ const UserManagement = () => {
     }
   };
 
+  // Toggle user status
   const handleToggleStatus = async (user) => {
     try {
       const updatedUser = { ...user, isActive: !user.isActive };
-      await api.put(`/users/update/${user.id}`, updatedUser);
+      await axios.put(`http://localhost:5000/api/users/${user.id}`, updatedUser);
       fetchUsers();
     } catch (error) {
       setError("Failed to update user status.");
@@ -97,13 +112,15 @@ const UserManagement = () => {
     }
   };
 
+  // Open new user dialog
   const handleNewUserClick = () => {
     setNewUserDialogOpen(true);
   };
 
+  // Save new user
   const handleNewUserSave = async () => {
     try {
-      await api.post("/users/create", newUser);
+      await axios.post("http://localhost:5000/api/users", newUser);
       fetchUsers();
       setNewUserDialogOpen(false);
       setNewUser({
@@ -111,6 +128,8 @@ const UserManagement = () => {
         email: "",
         password: "",
         role: "",
+        instituteId: "",
+        branchId: "",
       });
     } catch (error) {
       setError("Failed to create user.");
@@ -118,6 +137,7 @@ const UserManagement = () => {
     }
   };
 
+  // Get role color for chip
   const getRoleColor = (role) => {
     switch (role) {
       case "super_admin":
@@ -137,14 +157,17 @@ const UserManagement = () => {
     }
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter users based on search query
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
-        User Management
+        Institution Users
       </Typography>
 
       {/* Search Field */}
@@ -179,11 +202,7 @@ const UserManagement = () => {
                 <TableCell>{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Chip
-                    label={user.role}
-                    color={getRoleColor(user.role)}
-                    size="small"
-                  />
+                  <Chip label={user.role} color={getRoleColor(user.role)} size="small" />
                 </TableCell>
                 <TableCell>
                   <Switch
@@ -228,15 +247,22 @@ const UserManagement = () => {
             }
             sx={{ mb: 2 }}
           />
-          <TextField
-            fullWidth
-            label="Role"
-            value={selectedUser?.role || ""}
-            onChange={(e) =>
-              setSelectedUser({ ...selectedUser, role: e.target.value })
-            }
-            sx={{ mb: 2 }}
-          />
+          <FormControl component="fieldset" sx={{ mb: 2 }}>
+            <FormLabel component="legend">Role</FormLabel>
+            <RadioGroup
+              value={selectedUser?.role || ""}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, role: e.target.value })
+              }
+            >
+              <FormControlLabel value="super_admin" control={<Radio />} label="Super Admin" />
+              <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
+              <FormControlLabel value="secretary" control={<Radio />} label="Secretary" />
+              <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
+              <FormControlLabel value="student" control={<Radio />} label="Student" />
+              <FormControlLabel value="accountant" control={<Radio />} label="Accountant" />
+            </RadioGroup>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} color="primary">
@@ -252,35 +278,79 @@ const UserManagement = () => {
       <Dialog open={newUserDialogOpen} onClose={() => setNewUserDialogOpen(false)}>
         <DialogTitle>Create New User</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Username"
-            value={newUser.username}
-            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            value={newUser.email}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            value={newUser.password}
-            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Role"
-            value={newUser.role}
-            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
-            sx={{ mb: 2 }}
-          />
+          <Grid container spacing={2}>
+            {/* Username */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={newUser.username}
+                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+              />
+            </Grid>
+
+            {/* Email */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+              />
+            </Grid>
+
+            {/* Password */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Password"
+                type="password"
+                value={newUser.password}
+                onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+              />
+            </Grid>
+
+            {/* Role */}
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <FormLabel component="legend">Role</FormLabel>
+                <RadioGroup
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                >
+                  <FormControlLabel value="super_admin" control={<Radio />} label="Super Admin" />
+                  <FormControlLabel value="institute_admin" control={<Radio />} label="Institute Admin" />
+                  <FormControlLabel value="secretary" control={<Radio />} label="Secretary" />
+                  <FormControlLabel value="teacher" control={<Radio />} label="Teacher" />
+                  <FormControlLabel value="student" control={<Radio />} label="Student" />
+                  <FormControlLabel value="accountant" control={<Radio />} label="Accountant" />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+
+            {/* Institute ID */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Institute ID"
+                type="number"
+                value={newUser.instituteId}
+                onChange={(e) => setNewUser({ ...newUser, instituteId: e.target.value })}
+              />
+            </Grid>
+
+            {/* Branch ID */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Branch ID"
+                type="number"
+                value={newUser.branchId}
+                onChange={(e) => setNewUser({ ...newUser, branchId: e.target.value })}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setNewUserDialogOpen(false)} color="primary">
@@ -305,4 +375,4 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default InstitutionUsers;

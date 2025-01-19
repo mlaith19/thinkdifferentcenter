@@ -265,7 +265,7 @@ const SuperAdminDashboard = () => {
           </>
         )}
 
-        <FloatingActionButton />
+        <FloatingActionButton  />
       </Box>
 
       {/* Snackbar for Notifications */}

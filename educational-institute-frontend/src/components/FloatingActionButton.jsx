@@ -1,18 +1,15 @@
 // src/components/FloatingActionButton.jsx
 import React from "react";
-import { Link } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
 import { Button } from "@mui/material";
 
-const FloatingActionButton = () => {
+const FloatingActionButton = ({ onClick, icon, label }) => {
   return (
     <div className="fixed bottom-8 right-8 z-50">
       <Button
-        component={Link}
-        to="/institutes/create"
+        onClick={onClick} // Use the onClick prop
         variant="contained"
         color="primary"
-        startIcon={<AddIcon />}
+        startIcon={icon} // Use the icon prop
         sx={{
           borderRadius: "28px",
           padding: "12px 24px",
@@ -21,7 +18,7 @@ const FloatingActionButton = () => {
           fontSize: "16px",
         }}
       >
-        Add Institution
+        {label} {/* Use the label prop */}
       </Button>
     </div>
   );

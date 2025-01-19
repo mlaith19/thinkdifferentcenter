@@ -2,7 +2,8 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppBar, Toolbar, Typography, Button, Box, IconButton } from "@mui/material";
 import { decodeToken } from "../utils/decodeToken";
-import LogoutIcon from "@mui/icons-material/Logout"; // Import logout icon
+import LogoutIcon from "@mui/icons-material/Logout";
+import LockIcon from "@mui/icons-material/Lock";
 
 const Navbar = () => {
   const token = localStorage.getItem("token");
@@ -11,31 +12,25 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear the token
-    navigate("/login"); // Redirect to login page
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
     <AppBar position="static" sx={{ bgcolor: "primary.main", boxShadow: 3 }}>
       <Toolbar>
-        {/* Brand Name or Logo */}
-        <Typography
-          variant="h6"
-          sx={{
-            flexGrow: 1,
-            fontWeight: "bold",
-            fontFamily: "monospace",
-            letterSpacing: ".3rem",
-            color: "inherit",
-            textDecoration: "none",
-          }}
-          component={Link}
-          to="/"
-        >
-          Think
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+          <LockIcon sx={{ fontSize: 40, color: "white", mr: 2 }} />
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: "bold", color: "white", fontFamily: "monospace", letterSpacing: ".3rem" }}
+            component={Link}
+            to="/"
+          >
+            Think
+          </Typography>
+        </Box>
 
-        {/* Navigation Links */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           {role === "super_admin" && (
             <>
@@ -48,9 +43,20 @@ const Navbar = () => {
             </>
           )}
           {role === "institute_admin" && (
-            <Button color="inherit" component={Link} to="/institution-users">
-              Users
-            </Button>
+            <>
+              <Button color="inherit" component={Link} to="/institution-users">
+                Users
+              </Button>
+              <Button color="inherit" component={Link} to="/students">
+                Students
+              </Button>
+              <Button color="inherit" component={Link} to="/courses">
+                Courses
+              </Button>
+              <Button color="inherit" component={Link} to="/reports">
+                Reports
+              </Button>
+            </>
           )}
           {role === "secretary" && (
             <Button color="inherit" component={Link} to="/students">
@@ -78,7 +84,6 @@ const Navbar = () => {
             </Button>
           )}
 
-          {/* Logout Button (Visible for All Roles Except Unauthenticated Users) */}
           {token && (
             <IconButton color="inherit" onClick={handleLogout}>
               <LogoutIcon />

@@ -20,6 +20,7 @@ import ErrorPage from "./components/ErrorPage";
 import CreateInstitute from "./pages/CreateInstitute";
 import InstituteAdminDashboard from "./pages/InstituteAdminDashboard";
 import InstitutionUsers from "./pages/InstitutionUsers";
+import StudentDetails from "./pages/StudentDetails";
 function App() {
   return (
     <AuthProvider>
@@ -68,6 +69,14 @@ function App() {
             }
           />
           <Route
+  path="/students/:id"
+  element={
+    <ProtectedRoute allowedRoles={["super_admin", "institute_admin"]}>
+      <StudentDetails />
+    </ProtectedRoute>
+  }
+/>
+          <Route
             path="/sessions"
             element={
               <ProtectedRoute allowedRoles={["teacher"]}>
@@ -78,7 +87,7 @@ function App() {
           <Route
             path="/students"
             element={
-              <ProtectedRoute allowedRoles={["student", "secretary"]}>
+              <ProtectedRoute allowedRoles={["institute_admin"]}>
                 <StudentManagement />
               </ProtectedRoute>
             }
@@ -147,6 +156,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+
       <Route path="/404" element={<ErrorPage />} />
       <Route path="*" element={<ErrorPage />} />
         </Routes>

@@ -222,6 +222,62 @@ const deleteAllInstitutes = async (req, res) => {
   }
 };
 
+const getBranchesByInstituteId = async (req, res) => {
+  try {
+    // First, try to get the instituteId from the user's token
+    const instituteIdFromToken = req.user?.instituteId;
+
+    // If not in the token, try to get it from the request body
+    const instituteIdFromBody = req.body?.instituteId;
+
+    // Determine the instituteId to use
+    const instituteId = instituteIdFromToken || instituteIdFromBody;
+
+    // If no instituteId is found, respond with an error
+    if (!instituteId) {
+      return res.status(400).json({
+        succeed: false,
+        message: "Institute ID is required. Please provide it in the token or the request body.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    // Fetch all branches associated with the instituteId
+    const branches = await Branch.findAll({
+      where: { instituteId },
+      attributes: ["id", "name", "address", "phone", "createdAt", "instituteId"],
+    });
+
+    // If no branches are found, respond with an error
+    if (!branches || branches.length === 0) {
+      return res.status(404).json({
+        succeed: false,
+        message: `No branches found for institute ID ${instituteId}.`,
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: `Branches fetched successfully for institute ID ${instituteId}.`,
+      data: branches,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
+
+
+
 const deleteInstituteById = async (req, res) => {
   const instituteId = req.params.id; // Get the institute ID from the URL
 
@@ -259,4 +315,4 @@ const deleteInstituteById = async (req, res) => {
     });
   }
 };
-module.exports = { createInstitute, createBranch, getAllInstitutes,deleteAllInstitutes,deleteInstituteById };
+module.exports = { createInstitute, createBranch, getAllInstitutes,deleteAllInstitutes,deleteInstituteById,getBranchesByInstituteId };

@@ -15,9 +15,16 @@ router.post(
     body("username").notEmpty().withMessage("Username is required."),
     body("email").isEmail().withMessage("Valid email is required."),
     body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters."),
-    body("roleId").isInt().withMessage("Role ID must be a valid integer."),
+    body("role").notEmpty().withMessage("Role is required."), // Assuming "role" as a string
+    body("instituteId").optional().isInt().withMessage("Institute ID must be a valid integer."),
+    body("branchId").optional().isInt().withMessage("Branch ID must be a valid integer."), // Validate branchId
   ],
   userController.createUser
+);
+router.put(
+  "/users", 
+  authenticate, // Middleware to authenticate the requester
+  userController.updateUser // Controller to handle the update logic
 );
 
 // تسجيل الدخول
@@ -37,7 +44,7 @@ router.post("/logout", authenticate, userController.logoutUser);
 router.delete(
   "/delete/:userId",
   authenticate,
-  authorizeSuperAdmin,
+ 
   [
     param("userId").isInt().withMessage("User ID must be a valid integer."),
   ],
