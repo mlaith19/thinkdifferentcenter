@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   // إذا كانت الصفحة تتطلب أدوارًا محددة ولم يكن المستخدم لديه الدور المطلوب
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/dashboard" replace />; // توجيه إلى الداشبورد
+    return <Navigate to="/" replace />; // توجيه إلى الداشبورد
   }
 
   return children; // إذا كان كل شيء صحيحًا، عرض الصفحة المطلوبة

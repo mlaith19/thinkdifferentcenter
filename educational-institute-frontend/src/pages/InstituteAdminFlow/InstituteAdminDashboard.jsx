@@ -26,7 +26,7 @@ import {
   ExitToApp as ExitToAppIcon,
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
-import Navbar from "../components/Navbar"; // Import the Navbar component
+import Navbar from "../../components/Navbar"; // Import the Navbar component
 
 const InstituteAdminDashboard = () => {
   // Static data for demonstration

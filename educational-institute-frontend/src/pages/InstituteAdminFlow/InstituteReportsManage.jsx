@@ -59,7 +59,7 @@ const financialReports = [
   { month: "May", revenue: 14000, expenses: 7000, profit: 7000 },
 ];
 
-const ReportsScreen = () => {
+const InstituteReportsScreen = () => {
   const [reportType, setReportType] = useState("course");
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
@@ -298,4 +298,4 @@ const ReportsScreen = () => {
   );
 };
 
-export default ReportsScreen;
+export default InstituteReportsScreen;

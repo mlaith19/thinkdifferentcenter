@@ -29,7 +29,7 @@ import {
   Add as AddIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import FloatingActionButton from "../components/FloatingActionButton";
+import FloatingActionButton from "../../components/FloatingActionButton";
 
 const StudentManagement = () => {
   const navigate = useNavigate();

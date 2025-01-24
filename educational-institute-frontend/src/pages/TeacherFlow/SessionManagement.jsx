@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../services/api";
+import api from "../../services/api";
 import {
   Box,
   Typography,
@@ -19,7 +19,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import FloatingActionButton from "../components/FloatingActionButton";
+import FloatingActionButton from "../../components/FloatingActionButton";
 
 const SessionManagement = () => {
   const [sessions, setSessions] = useState([]);

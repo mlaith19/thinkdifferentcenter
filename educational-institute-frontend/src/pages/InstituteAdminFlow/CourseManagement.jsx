@@ -31,7 +31,7 @@ import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FloatingActionButton from "../components/FloatingActionButton";
+import FloatingActionButton from "../../components/FloatingActionButton";
 import { useNavigate } from "react-router-dom";
 
 // Dummy data for courses

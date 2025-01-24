@@ -31,7 +31,7 @@ import {
 } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import api from "../services/api";
+import api from "../../services/api";
 
 const CreateInstitute = () => {
   const navigate = useNavigate();

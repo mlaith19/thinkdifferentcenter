@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import api from "../services/api";
-import FloatingActionButton from "../components/FloatingActionButton";
+import api from "../../services/api";
+import FloatingActionButton from "../../components/FloatingActionButton";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -31,7 +31,7 @@ import {
   Person as PersonIcon,
   Business as BusinessIcon,
 } from "@mui/icons-material";
-import Navbar from "../components/Navbar"; // Navbar component
+import Navbar from "../../components/Navbar"; // Navbar component
 import AddIcon from "@mui/icons-material/Add"; // Import the AddIcon
 
 const SuperAdminDashboard = () => {
