@@ -4,7 +4,8 @@ const Branch = require("../models/Branch");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { handleError } = require("../utils/errorHandler");
-const{ generateLicenseKey, encryptLicenseKey,decryptLicenseKey } = require("../utils/LicenseKeyService");
+const { generateLicenseKey, encryptLicenseKey, decryptLicenseKey } = require("../utils/LicenseKeyService");
+
 const generateToken = (user) => {
   return jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
@@ -94,6 +95,7 @@ const createInstitute = async (req, res) => {
     });
   }
 };
+
 // Create a new branch
 const createBranch = async (req, res) => {
   const { name, address, phone } = req.body;
@@ -197,6 +199,71 @@ const getAllInstitutes = async (req, res) => {
     });
   }
 };
+
+// Get institute by ID
+const getInstituteById = async (req, res) => {
+  const instituteId = req.params.id;
+
+  try {
+    const institute = await Institute.findByPk(instituteId, {
+      include: [
+        {
+          model: User,
+          as: "admin",
+          attributes: ["id", "username", "email", "fullName"],
+        },
+        {
+          model: Branch,
+          as: "branches",
+          attributes: ["id", "name", "address", "phone"],
+          include: [
+            {
+              model: User,
+              attributes: ["id", "fullName", "email", "role"],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!institute) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Institute not found.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    // Decrypt licenseKey and extract startDate and endDate
+    const decryptedLicenseKey = decryptLicenseKey(institute.licenseKey);
+    const [startDateISO, endDateISO] = decryptedLicenseKey.split("||").slice(0, 2);
+    const startDate = startDateISO.split("T")[0];
+    const endDate = endDateISO.split("T")[0];
+
+    const instituteData = {
+      ...institute.toJSON(),
+      startDate,
+      endDate,
+    };
+
+    res.status(200).json({
+      succeed: true,
+      message: "Institute fetched successfully.",
+      data: instituteData,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
+
 const deleteAllInstitutes = async (req, res) => {
   try {
     // Delete all branches first since they are linked to institutes
@@ -224,32 +291,33 @@ const deleteAllInstitutes = async (req, res) => {
 
 const getBranchesByInstituteId = async (req, res) => {
   try {
-    // First, try to get the instituteId from the user's token
+    // Get instituteId from token, body, or query
     const instituteIdFromToken = req.user?.instituteId;
-
-    // If not in the token, try to get it from the request body
     const instituteIdFromBody = req.body?.instituteId;
+    const instituteIdFromQuery = req.query?.instituteId;
 
     // Determine the instituteId to use
-    const instituteId = instituteIdFromToken || instituteIdFromBody;
+    const instituteId = instituteIdFromToken || instituteIdFromBody || instituteIdFromQuery;
 
-    // If no instituteId is found, respond with an error
+    // If no instituteId is found
     if (!instituteId) {
       return res.status(400).json({
         succeed: false,
-        message: "Institute ID is required. Please provide it in the token or the request body.",
+        message: "Institute ID is required. Provide it in the token, body, or query parameters.",
         data: null,
         errorDetails: null,
       });
     }
 
-    // Fetch all branches associated with the instituteId
+    console.log("Institute ID used for query:", instituteId); // Debugging log
+
+    // Fetch branches for the given instituteId
     const branches = await Branch.findAll({
       where: { instituteId },
       attributes: ["id", "name", "address", "phone", "createdAt", "instituteId"],
     });
 
-    // If no branches are found, respond with an error
+    // Handle case where no branches are found
     if (!branches || branches.length === 0) {
       return res.status(404).json({
         succeed: false,
@@ -259,6 +327,7 @@ const getBranchesByInstituteId = async (req, res) => {
       });
     }
 
+    // Return the branches
     res.status(200).json({
       succeed: true,
       message: `Branches fetched successfully for institute ID ${instituteId}.`,
@@ -266,17 +335,15 @@ const getBranchesByInstituteId = async (req, res) => {
       errorDetails: null,
     });
   } catch (error) {
-    const { statusCode, errorMessage, errorDetails } = handleError(error);
-    res.status(statusCode).json({
+    console.error("Error fetching branches:", error); // Log the error
+    res.status(500).json({
       succeed: false,
-      message: errorMessage,
+      message: "An error occurred while fetching branches.",
       data: null,
-      errorDetails,
+      errorDetails: error.message,
     });
   }
 };
-
-
 
 const deleteInstituteById = async (req, res) => {
   const instituteId = req.params.id; // Get the institute ID from the URL
@@ -315,4 +382,43 @@ const deleteInstituteById = async (req, res) => {
     });
   }
 };
-module.exports = { createInstitute, createBranch, getAllInstitutes,deleteAllInstitutes,deleteInstituteById,getBranchesByInstituteId };
+const deleteBranch = async (req, res) => {
+  const { instituteId, branchId } = req.params;
+
+  try {
+    const branch = await Branch.findOne({ where: { id: branchId, instituteId } });
+    if (!branch) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Branch not found.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    await branch.destroy();
+    res.status(200).json({
+      succeed: true,
+      message: "Branch deleted successfully.",
+      data: null,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
+module.exports = {
+  createInstitute,
+  createBranch,
+  getAllInstitutes,
+  getInstituteById,
+  deleteAllInstitutes,
+  deleteInstituteById,
+  getBranchesByInstituteId, deleteBranch
+};

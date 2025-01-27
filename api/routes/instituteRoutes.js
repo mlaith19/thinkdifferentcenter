@@ -32,22 +32,39 @@ router.post(
     ],
     instituteController.createBranch // Controller to handle branch creation
   );
-  router.get("/", authenticate, authorizeSuperAdmin, instituteController.getAllInstitutes);
-  router.delete(
-    "/delete-all",
-    authenticate,          // Authenticate the user
-    authorizeSuperAdmin,   // Ensure only super admin can delete
-    instituteController.deleteAllInstitutes // Controller to handle deletion
-  );
-  router.get(
-    "/branch",
-    authenticate,        
-     instituteController.getBranchesByInstituteId  
-  );
-  router.delete(
-    "/:id", 
-    authenticate,          // Authenticate the user
-    authorizeSuperAdmin,   // Ensure only super admin can delete
-    instituteController.deleteInstituteById // Controller to handle deletion by ID
-  );
+
+// Get all institutes
+router.get("/", authenticate, authorizeSuperAdmin, instituteController.getAllInstitutes);
+
+// Get institute by ID
+router.get("/:id", authenticate, authorizeSuperAdmin, instituteController.getInstituteById);
+
+// Delete all institutes
+router.delete(
+  "/delete-all",
+  authenticate,          // Authenticate the user
+  authorizeSuperAdmin,   // Ensure only super admin can delete
+  instituteController.deleteAllInstitutes // Controller to handle deletion
+);
+
+// Get branches by institute ID
+router.get(
+  "/branch",
+  authenticate,        
+  instituteController.getBranchesByInstituteId  
+);
+
+// Delete institute by ID
+router.delete(
+  "/:id", 
+  authenticate,          // Authenticate the user
+  authorizeSuperAdmin,   // Ensure only super admin can delete
+  instituteController.deleteInstituteById // Controller to handle deletion by ID
+);
+router.delete(
+  "/:instituteId/branch/:branchId",
+  authenticate,
+  authorizeSuperAdmin,
+  instituteController.deleteBranch
+);
 module.exports = router;

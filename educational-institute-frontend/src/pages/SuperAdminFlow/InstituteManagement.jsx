@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -18,6 +18,13 @@ import {
   ListItemSecondaryAction,
   Fab,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   DateRange as DateRangeIcon,
@@ -27,11 +34,23 @@ import {
   Cancel as CancelIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
+  People as PeopleIcon,
 } from "@mui/icons-material";
+import api from "../../services/api";
 
 const InstituteManagement = () => {
   const { state } = useLocation();
-  const institute = state?.institute;
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [institute, setInstitute] = useState(state?.institute || null);
+  const [loading, setLoading] = useState(!state?.institute);
+  const [error, setError] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteBranchDialogOpen, setDeleteBranchDialogOpen] = useState(false);
+  const [branchToDelete, setBranchToDelete] = useState(null);
 
   const [name, setName] = useState(institute?.name || "");
   const [email, setEmail] = useState(institute?.email || "");
@@ -39,67 +58,80 @@ const InstituteManagement = () => {
   const [endDate, setEndDate] = useState(institute?.endDate || "");
   const [adminName, setAdminName] = useState(institute?.admin?.fullName || "");
   const [adminEmail, setAdminEmail] = useState(institute?.admin?.email || "");
-  const [branches, setBranches] = useState(
-   [
-      {
-        id: 1,
-        name: "Main Branch",
-        address: "123 Main St, City",
-        phone: "123-456-7890",
-        users: [
-          {
-            id: 1,
-            fullName: "John Doe",
-            role: "institute_admin",
-            email: "john.doe@example.com",
-          },
-          {
-            id: 2,
-            fullName: "Jane Smith",
-            role: "secretary",
-            email: "jane.smith@example.com",
-          },
-          {
-            id: 3,
-            fullName: "Alice Johnson",
-            role: "teacher",
-            email: "alice.johnson@example.com",
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "Second Branch",
-        address: "456 Elm St, City",
-        phone: "987-654-3210",
-        users: [
-          {
-            id: 4,
-            fullName: "Bob Brown",
-            role: "student",
-            email: "bob.brown@example.com",
-          },
-          {
-            id: 5,
-            fullName: "Charlie Davis",
-            role: "accountant",
-            email: "charlie.davis@example.com",
-          },
-        ],
-      },
-    ]
-  );
+  const [branches, setBranches] = useState(institute?.branches || []);
   const [status, setStatus] = useState(institute?.status || "active");
 
-  if (!institute) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography variant="h6" color="error">
-          No institute data found.
-        </Typography>
-      </Box>
-    );
-  }
+  useEffect(() => {
+    if (!institute && id) {
+      fetchInstitute();
+    }
+  }, [id, institute]);
+
+  const fetchInstitute = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/institute/${id}`);
+      const instituteData = response.data.data;
+      setInstitute(instituteData);
+      setName(instituteData.name);
+      setEmail(instituteData.email);
+      setStartDate(instituteData.startDate);
+      setEndDate(instituteData.endDate);
+      setAdminName(instituteData.admin.fullName);
+      setAdminEmail(instituteData.admin.email);
+      setBranches(instituteData.branches);
+      setStatus(instituteData.status);
+    } catch (error) {
+      setError("Failed to fetch institute data.");
+      console.error("Error fetching institute:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const updatedInstitute = {
+        name,
+        email,
+        startDate,
+        endDate,
+        admin: {
+          fullName: adminName,
+          email: adminEmail,
+        },
+        branches,
+        status,
+      };
+
+      await api.put(`/institute/${id}`, updatedInstitute);
+      setSnackbarMessage("Institute updated successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Failed to update institute.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error updating institute:", error);
+    }
+  };
+
+  const handleDeleteInstitute = async () => {
+    try {
+      await api.delete(`/institute/${id}`);
+      setSnackbarMessage("Institute deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      navigate("/institutes");
+    } catch (error) {
+      setSnackbarMessage("Failed to delete institute.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error deleting institute:", error);
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
 
   const handleAddBranch = () => {
     const newBranch = {
@@ -112,13 +144,21 @@ const InstituteManagement = () => {
     setBranches([...branches, newBranch]);
   };
 
-  const handleDeleteBranch = (branchId) => {
-    setBranches(branches.filter((branch) => branch.id !== branchId));
-  };
-
-  const handleDeleteInstitute = () => {
-    console.log("Delete institute:", institute.id);
-    // Add delete logic here
+  const handleDeleteBranch = async (branchId) => {
+    try {
+      await api.delete(`/institute/${id}/branch/${branchId}`);
+      setBranches(branches.filter((branch) => branch.id !== branchId));
+      setSnackbarMessage("Branch deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Failed to delete branch.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error deleting branch:", error);
+    } finally {
+      setDeleteBranchDialogOpen(false);
+    }
   };
 
   const handleStatusChange = (event) => {
@@ -141,6 +181,38 @@ const InstituteManagement = () => {
         return "default";
     }
   };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
+  if (!institute && !id) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h6" color="error">
+          No institute data found.
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (loading) {
+    return (
+      <Box sx={{ p: 4, display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 4 }}>
@@ -237,7 +309,10 @@ const InstituteManagement = () => {
                   </Typography>
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteBranch(branch.id)}
+                    onClick={() => {
+                      setBranchToDelete(branch.id);
+                      setDeleteBranchDialogOpen(true);
+                    }}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -320,14 +395,14 @@ const InstituteManagement = () => {
           <Button
             variant="outlined"
             startIcon={<CancelIcon />}
-            onClick={() => console.log("Cancel clicked")}
+            onClick={() => navigate("/institutes")}
           >
             Cancel
           </Button>
           <Button
             variant="contained"
             startIcon={<SaveIcon />}
-            onClick={() => console.log("Save clicked")}
+            onClick={handleSaveChanges}
           >
             Save Changes
           </Button>
@@ -344,15 +419,79 @@ const InstituteManagement = () => {
         <AddIcon />
       </Fab>
 
+      {/* Floating Action Button for Navigating to InstitutionUsers */}
+      <Fab
+        color="secondary"
+        aria-label="users"
+        sx={{ position: "fixed", bottom: 80, right: 16 }}
+        onClick={() => navigate(`/institution-users `, { state: { instituteId: institute.id } })}
+      >
+        <PeopleIcon />
+      </Fab>
+
       {/* Delete Institution Button */}
       <Fab
         color="error"
         aria-label="delete"
-        sx={{ position: "fixed", bottom: 80, right: 16 }}
-        onClick={handleDeleteInstitute}
+        sx={{ position: "fixed", bottom: 144, right: 16 }}
+        onClick={() => setDeleteDialogOpen(true)}
       >
         <DeleteIcon />
       </Fab>
+
+      {/* Snackbar for Notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Delete Institute Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Institute</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this institute? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteInstitute} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Branch Confirmation Dialog */}
+      <Dialog
+        open={deleteBranchDialogOpen}
+        onClose={() => setDeleteBranchDialogOpen(false)}
+      >
+        <DialogTitle>Delete Branch</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this branch? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteBranchDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => handleDeleteBranch(branchToDelete)} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

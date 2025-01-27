@@ -26,7 +26,7 @@ import {
   FormControlLabel,
   FormControl,
   FormLabel,
-  Grid, // Added Grid for better layout
+  Grid,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -50,8 +50,10 @@ const InstitutionUsers = () => {
     branchId: "",
   });
   const [error, setError] = useState("");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState(null);
+  const [actionUser, setActionUser] = useState(null);
 
-  // Fetch users from the API
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -66,18 +68,15 @@ const InstitutionUsers = () => {
     }
   };
 
-  // Handle search input
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  // Open edit dialog for a user
   const handleEditClick = (user) => {
     setSelectedUser(user);
     setEditDialogOpen(true);
   };
 
-  // Save edited user details
   const handleEditSave = async () => {
     try {
       await axios.put(`http://localhost:5000/api/users/${selectedUser.id}`, selectedUser);
@@ -89,35 +88,22 @@ const InstitutionUsers = () => {
     }
   };
 
-  // Delete a user
   const handleDeleteUser = async (userId) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/users/${userId}`);
-      fetchUsers();
-    } catch (error) {
-      setError("Failed to delete user.");
-      console.error("Error deleting user:", error);
-    }
+    setActionType('delete');
+    setActionUser(userId);
+    setConfirmDialogOpen(true);
   };
 
-  // Toggle user status
   const handleToggleStatus = async (user) => {
-    try {
-      const updatedUser = { ...user, isActive: !user.isActive };
-      await axios.put(`http://localhost:5000/api/users/${user.id}`, updatedUser);
-      fetchUsers();
-    } catch (error) {
-      setError("Failed to update user status.");
-      console.error("Error updating user status:", error);
-    }
+    setActionType('toggle');
+    setActionUser(user);
+    setConfirmDialogOpen(true);
   };
 
-  // Open new user dialog
   const handleNewUserClick = () => {
     setNewUserDialogOpen(true);
   };
 
-  // Save new user
   const handleNewUserSave = async () => {
     try {
       await axios.post("http://localhost:5000/api/users", newUser);
@@ -137,7 +123,6 @@ const InstitutionUsers = () => {
     }
   };
 
-  // Get role color for chip
   const getRoleColor = (role) => {
     switch (role) {
       case "super_admin":
@@ -157,11 +142,11 @@ const InstitutionUsers = () => {
     }
   };
 
-  // Filter users based on search query
   const filteredUsers = users.filter(
     (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email !== "super@admin.com" &&
+      (user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -170,7 +155,6 @@ const InstitutionUsers = () => {
         Institution Users
       </Typography>
 
-      {/* Search Field */}
       <Box sx={{ mb: 4, display: "flex", alignItems: "center" }}>
         <TextField
           fullWidth
@@ -184,7 +168,6 @@ const InstitutionUsers = () => {
         />
       </Box>
 
-      {/* Users Table */}
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
         <Table>
           <TableHead>
@@ -225,7 +208,6 @@ const InstitutionUsers = () => {
         </Table>
       </TableContainer>
 
-      {/* Edit User Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
         <DialogTitle>Edit User</DialogTitle>
         <DialogContent>
@@ -274,12 +256,10 @@ const InstitutionUsers = () => {
         </DialogActions>
       </Dialog>
 
-      {/* New User Dialog */}
       <Dialog open={newUserDialogOpen} onClose={() => setNewUserDialogOpen(false)}>
         <DialogTitle>Create New User</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            {/* Username */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -288,8 +268,6 @@ const InstitutionUsers = () => {
                 onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
               />
             </Grid>
-
-            {/* Email */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -299,8 +277,6 @@ const InstitutionUsers = () => {
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
               />
             </Grid>
-
-            {/* Password */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -310,8 +286,6 @@ const InstitutionUsers = () => {
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
               />
             </Grid>
-
-            {/* Role */}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <FormLabel component="legend">Role</FormLabel>
@@ -328,8 +302,6 @@ const InstitutionUsers = () => {
                 </RadioGroup>
               </FormControl>
             </Grid>
-
-            {/* Institute ID */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -339,8 +311,6 @@ const InstitutionUsers = () => {
                 onChange={(e) => setNewUser({ ...newUser, instituteId: e.target.value })}
               />
             </Grid>
-
-            {/* Branch ID */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -362,7 +332,43 @@ const InstitutionUsers = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Floating Action Button for Adding User */}
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to {actionType === 'delete' ? 'delete' : 'toggle the status of'} this user?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={async () => {
+            if (actionType === 'delete') {
+              try {
+                await axios.delete(`http://localhost:5000/api/users/${actionUser}`);
+                fetchUsers();
+              } catch (error) {
+                setError("Failed to delete user.");
+                console.error("Error deleting user:", error);
+              }
+            } else if (actionType === 'toggle') {
+              try {
+                const updatedUser = { ...actionUser, isActive: !actionUser.isActive };
+                await axios.put(`http://localhost:5000/api/users/${actionUser.id}`, updatedUser);
+                fetchUsers();
+              } catch (error) {
+                setError("Failed to update user status.");
+                console.error("Error updating user status:", error);
+              }
+            }
+            setConfirmDialogOpen(false);
+          }} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Fab
         color="primary"
         aria-label="add"
