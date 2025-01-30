@@ -43,10 +43,30 @@ const Institute = sequelize.define(
 
  
 
+// Updated associations
+Institute.hasMany(Branch, {
+  foreignKey: "instituteId",
+  as: "branches",
+  onDelete: 'CASCADE',
+  hooks: true
+});
 
-Institute.hasMany(Branch, { foreignKey: "instituteId", as: "branches" }); // Alias: branches
-Branch.belongsTo(Institute, { foreignKey: "instituteId", as: "branches" }); // Alias: branches
-Institute.hasOne(User, { foreignKey: "instituteId", as: "admin" }); // Alias: admin
-User.belongsTo(Institute, { foreignKey: "instituteId", as: "admin" }); // Alias: admin
+Branch.belongsTo(Institute, {
+  foreignKey: "instituteId",
+  as: "institute"
+});
+
+Institute.hasOne(User, {
+  foreignKey: "instituteId",
+  as: "admin",
+  scope: {
+    role: 'institute_admin'
+  }
+});
+
+User.belongsTo(Institute, {
+  foreignKey: "instituteId",
+  as: "adminInstitute"
+});
 
 module.exports = Institute;

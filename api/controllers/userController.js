@@ -197,60 +197,41 @@ const getUsersByBranchId = async (req, res) => {
   }
 };
 const updateUser = async (req, res) => {
-  const userId  = req.body.userId; // User ID from route parameters
-  const requester = req.user; // Authenticated requester details
-  const updates = req.body; // Fields to update
+  const userId = req.params.userId;
+  const requester = req.user;
+  const updates = req.body;
 
   try {
-    // Check if the requester has permission to update users
     if (!["super_admin", "institute_admin"].includes(requester.role)) {
-      return res.status(403).json({ message: "You do not have permission to update users." });
+      return res.status(403).json({ message: "Insufficient permissions" });
     }
-console.log(userId);
-    // Fetch the user to update
+
     const userToUpdate = await User.findByPk(userId);
     if (!userToUpdate) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Ensure institute_admins can only update users in their institute/branch
-    if (
-      requester.role === "institute_admin" &&
-      (userToUpdate.instituteId !== requester.instituteId || userToUpdate.branchId !== requester.branchId)
-    ) {
-      return res.status(403).json({
-        message: "You do not have permission to update users outside your institute or branch.",
-      });
+    if (requester.role === "institute_admin" && 
+        (userToUpdate.instituteId !== requester.instituteId || userToUpdate.branchId !== requester.branchId)) {
+      return res.status(403).json({ message: "Unauthorized access" });
     }
 
-    // Hash password if it's being updated
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, 10);
     }
 
-    // Update the user with the provided fields
     await userToUpdate.update(updates);
-
-    // Respond with the updated user details (omit sensitive fields like password)
+    
     res.status(200).json({
-      message: "User updated successfully.",
-      user: {
-        id: userToUpdate.id,
-        username: userToUpdate.username,
-        email: userToUpdate.email,
-        fullName: userToUpdate.fullName,
-        role: userToUpdate.role,
-        instituteId: userToUpdate.instituteId,
-        branchId: userToUpdate.branchId,
-        isActive: userToUpdate.isActive,
-        createdAt: userToUpdate.createdAt,
-      },
+      message: "User updated successfully",
+      user: userToUpdate
     });
   } catch (error) {
-    const { statusCode, errorMessage, errorDetails } = handleError(error);
-    res.status(statusCode).json({ message: errorMessage, errorDetails });
+    const { statusCode, errorMessage } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage });
   }
 };
+
 // حذف المستخدم
 const deleteUser = async (req, res) => {
   const { userId } = req.params;
@@ -259,18 +240,18 @@ const deleteUser = async (req, res) => {
   try {
     const userToDelete = await User.findByPk(userId);
     if (!userToDelete) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (requester.role !== "super_admin") {
-      return res.status(403).json({ message: "You do not have permission to delete this user." });
+      return res.status(403).json({ message: "Unauthorized action" });
     }
 
     await userToDelete.destroy();
-    res.status(200).json({ message: "User deleted successfully." });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    const { statusCode, errorMessage, errorDetails } = handleError(error);
-    res.status(statusCode).json({ message: errorMessage, errorDetails });
+    const { statusCode, errorMessage } = handleError(error);
+    res.status(statusCode).json({ message: errorMessage });
   }
 };
 

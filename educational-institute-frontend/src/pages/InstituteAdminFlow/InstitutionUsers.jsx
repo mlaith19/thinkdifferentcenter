@@ -45,7 +45,7 @@ const InstitutionUsers = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ username: "", email: "", password: "", role: "", branchId: "" });
+  const [newUser, setNewUser] = useState({ fullName: "", email: "", password: "", role: "", branchId: "" });
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -82,10 +82,8 @@ const InstitutionUsers = () => {
   // Fetch branches from the API
   const fetchBranches = async () => {
     try {
-      const response = await api.get("/institute/branch", {
-        params: { instituteId },
-      });
-      setBranches(response.data.data);
+      const response = await api.get(`/institute/${instituteId}/branches`);
+      setBranches(response.data.branches || []);
     } catch (error) {
       setSnackbarMessage("Failed to fetch branches. Cannot create users.");
       setSnackbarSeverity("error");
@@ -125,7 +123,7 @@ const InstitutionUsers = () => {
   // Delete a user
   const handleDeleteUser = async (userId) => {
     try {
-      await api.delete(`/users/${userId}`);
+      await api.delete(`/users/delete/${userId}`);
       fetchUsers();
       setSnackbarMessage("User deleted successfully.");
       setSnackbarSeverity("success");
@@ -160,10 +158,19 @@ const InstitutionUsers = () => {
   // Save new user
   const handleNewUserSave = async () => {
     try {
-      await api.post("/users", { ...newUser, instituteId });
+      const emailParts = newUser.email.split(/[.@]/);
+      const generatedUsername = emailParts[0];
+      
+      await api.post("/users/create", { 
+        ...newUser, 
+        username: generatedUsername,
+        instituteId,
+        branchId: newUser.branchId  
+      });
+      
       fetchUsers();
       setNewUserDialogOpen(false);
-      setNewUser({ username: "", email: "", password: "", role: "", branchId: "" });
+      setNewUser({ fullName: "", email: "", password: "", role: "", branchId: "" });
       setSnackbarMessage("User created successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -249,7 +256,7 @@ const InstitutionUsers = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Username</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
@@ -259,7 +266,7 @@ const InstitutionUsers = () => {
           <TableBody>
             {filteredUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.fullName}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Chip label={user.role} color={getRoleColor(user.role)} size="small" />
@@ -268,7 +275,7 @@ const InstitutionUsers = () => {
                   <Switch checked={user.isActive} onChange={() => handleToggleStatus(user)} color="primary" />
                 </TableCell>
                 <TableCell>
-                  <IconButton onClick={() => handleConfirmAction("edit", user.id)} color="primary">
+                  <IconButton onClick={() =>  handleEditClick(user)} color="primary">
                     <EditIcon />
                   </IconButton>
                   <IconButton onClick={() => handleConfirmAction("delete", user.id)} color="error">
@@ -287,9 +294,9 @@ const InstitutionUsers = () => {
         <DialogContent>
           <TextField
             fullWidth
-            label="Username"
-            value={selectedUser?.username || ""}
-            onChange={(e) => setSelectedUser({ ...selectedUser, username: e.target.value })}
+            label="Full Name"
+            value={selectedUser?.fullName || ""}
+            onChange={(e) => setSelectedUser({ ...selectedUser, fullName: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
@@ -299,8 +306,8 @@ const InstitutionUsers = () => {
             onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
             sx={{ mb: 2 }}
           />
-          <FormControl component="fieldset" sx={{ mb: 2 }}>
-            <FormLabel component="legend">Role</FormLabel>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <FormLabel>Role</FormLabel>
             <RadioGroup
               value={selectedUser?.role || ""}
               onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
@@ -312,14 +319,24 @@ const InstitutionUsers = () => {
               <FormControlLabel value="accountant" control={<Radio />} label="Accountant" />
             </RadioGroup>
           </FormControl>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Branch</InputLabel>
+            <Select
+              value={selectedUser?.branchId || ""}
+              onChange={(e) => setSelectedUser({ ...selectedUser, branchId: e.target.value })}
+              label="Branch"
+            >
+              {branches.map((branch) => (
+                <MenuItem key={branch.id} value={branch.id}>
+                  {branch.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleEditSave} color="primary">
-            Save
-          </Button>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} color="primary">Save</Button>
         </DialogActions>
       </Dialog>
 
@@ -331,9 +348,9 @@ const InstitutionUsers = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Username"
-                value={newUser.username}
-                onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                label="Full Name"
+                value={newUser.fullName}
+                onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
               />
             </Grid>
             <Grid item xs={12}>

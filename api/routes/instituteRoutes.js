@@ -46,14 +46,27 @@ router.delete(
   authorizeSuperAdmin,   // Ensure only super admin can delete
   instituteController.deleteAllInstitutes // Controller to handle deletion
 );
-
+router.put(
+  "/:id",
+  authenticate,
+  authorizeSuperAdmin,
+  [
+    body("name").optional().notEmpty(),
+    body("email").optional().isEmail(),
+    body("startDate").optional().isISO8601(),
+    body("endDate").optional().isISO8601(),
+    body("admin.fullName").optional().notEmpty(),
+    body("admin.email").optional().isEmail(),
+  ],
+  instituteController.updateInstitute
+);
 // Get branches by institute ID
 router.get(
   "/branch",
   authenticate,        
   instituteController.getBranchesByInstituteId  
 );
-
+router.get("/:instituteId/branches", authenticate, instituteController.getBranchesByInstituteIdPath);
 // Delete institute by ID
 router.delete(
   "/:id", 
@@ -67,4 +80,16 @@ router.delete(
   authorizeSuperAdmin,
   instituteController.deleteBranch
 );
+router.post(
+  "/:instituteId/branch", 
+  authenticate,
+  authorizeSuperAdmin,
+  [
+    body("name").not().isEmpty().withMessage("Branch name is required."),
+    body("address").optional(),
+    body("phone").optional(),
+  ],
+  instituteController.createBranch
+);
+ 
 module.exports = router;

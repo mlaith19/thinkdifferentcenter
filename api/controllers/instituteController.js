@@ -97,12 +97,12 @@ const createInstitute = async (req, res) => {
 };
 
 // Create a new branch
+// controllers/instituteController.js
 const createBranch = async (req, res) => {
   const { name, address, phone } = req.body;
-  const instituteId = req.params.instituteId; // Get institution ID from the URL
+  const instituteId = req.params.instituteId;
 
   try {
-    // Check if the institution exists
     const institute = await Institute.findByPk(instituteId);
     if (!institute) {
       return res.status(404).json({
@@ -113,7 +113,6 @@ const createBranch = async (req, res) => {
       });
     }
 
-    // Create the branch
     const newBranch = await Branch.create({
       name,
       instituteId,
@@ -270,7 +269,166 @@ const getInstituteById = async (req, res) => {
     });
   }
 };
+const getBranchesByInstituteIdPath = async (req, res) => {
+  try {
+    const instituteId = req.params.instituteId; // Get from URL path
+    const branches = await Branch.findAll({ 
+      where: { instituteId },
+      attributes: ["id", "name", "address", "phone"]
+    });
+    
+    res.status(200).json({ branches });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+}
+const updateInstitute = async (req, res) => {
+  const { id } = req.params;
+  
+  const updates = req.body;
+  const requester = req.user;
 
+  try {
+    // Authorization check
+    if (requester.role !== "super_admin") {
+      return res.status(403).json({ 
+        succeed: false,
+        message: "Unauthorized to update institutes.",
+        data: null,
+        errorDetails: "User lacks super_admin privileges"
+      });
+    }
+
+    const institute = await Institute.findByPk(id, {
+      include: [
+        { model: User, as: 'admin' },
+        { model: Branch, as: 'branches' }
+      ]
+    });
+
+    if (!institute) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Institute not found.",
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Update license key if dates change
+    if (updates.startDate || updates.endDate) {
+      const startDate = new Date(updates.startDate || institute.startDate);
+      const endDate = new Date(updates.endDate || institute.endDate);
+      
+      if (startDate >= endDate) {
+        return res.status(400).json({
+          succeed: false,
+          message: "End date must be after start date.",
+          data: null,
+          errorDetails: "Invalid date range"
+        });
+      }
+
+      const rawLicenseKey = generateLicenseKey(
+        startDate.toISOString(), 
+        endDate.toISOString()
+      );
+      updates.licenseKey = encryptLicenseKey(rawLicenseKey);
+    }
+
+    // Update main institute fields
+    await institute.update(updates);
+
+    // Update admin user details
+    if (updates.admin) {
+      const adminUser = await User.findOne({
+        where: { 
+          instituteId: id, 
+          role: 'institute_admin' 
+        }
+      });
+      
+      if (adminUser) {
+        await adminUser.update({
+          fullName: updates.admin.fullName,
+          email: updates.admin.email
+        });
+      }
+    }
+
+    // Process branch updates
+    if (updates.branches) {
+      const existingBranches = await Branch.findAll({ 
+        where: { instituteId: id } 
+      });
+
+      const incomingBranches = updates.branches;
+
+      // Update existing and create new branches
+      for (const incomingBranch of incomingBranches) {
+        if (incomingBranch.id) {
+          const branchToUpdate = existingBranches.find(
+            b => b.id === incomingBranch.id
+          );
+          if (branchToUpdate) {
+            await branchToUpdate.update({
+              name: incomingBranch.name,
+              address: incomingBranch.address,
+              phone: incomingBranch.phone
+            });
+          }
+        } else {
+          await Branch.create({
+            ...incomingBranch,
+            instituteId: id
+          });
+        }
+      }
+
+      // Delete removed branches
+      const incomingBranchIds = incomingBranches
+        .map(b => b.id)
+        .filter(id => id);
+        
+      const branchesToDelete = existingBranches.filter(
+        b => !incomingBranchIds.includes(b.id)
+      );
+
+      for (const branch of branchesToDelete) {
+        await branch.destroy();
+      }
+    }
+
+    const updatedInstitute = await Institute.findByPk(id, {
+      include: [
+        { model: User, as: 'admin' },
+        { model: Branch, as: 'branches' }
+      ]
+    });
+
+    res.status(200).json({
+      succeed: true,
+      message: "Institute updated successfully.",
+      data: updatedInstitute,
+      errorDetails: null
+    });
+
+  } catch (error) {
+    console.error("Error updating institute:", error);
+    res.status(500).json({
+      succeed: false,
+      message: "Failed to update institute.",
+      data: null,
+      errorDetails: error.message
+    });
+  }
+};
 const deleteAllInstitutes = async (req, res) => {
   try {
     // Delete all branches first since they are linked to institutes
@@ -427,5 +585,7 @@ module.exports = {
   getInstituteById,
   deleteAllInstitutes,
   deleteInstituteById,
-  getBranchesByInstituteId, deleteBranch
+  getBranchesByInstituteId, deleteBranch,
+  updateInstitute 
+  ,getBranchesByInstituteIdPath
 };

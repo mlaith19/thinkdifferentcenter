@@ -22,9 +22,15 @@ router.post(
   userController.createUser
 );
 router.put(
-  "/users", 
-  authenticate, // Middleware to authenticate the requester
-  userController.updateUser // Controller to handle the update logic
+  "/:userId",
+  authenticate,
+  [
+    param("userId").isInt().withMessage("Invalid user ID"),
+    body("email").optional().isEmail(),
+    body("password").optional().isLength({ min: 8 }),
+    body("role").optional().isIn(["super_admin", "institute_admin", "secretary", "teacher", "student", "accountant"])
+  ],
+  userController.updateUser
 );
 
 // تسجيل الدخول
@@ -44,10 +50,7 @@ router.post("/logout", authenticate, userController.logoutUser);
 router.delete(
   "/delete/:userId",
   authenticate,
- 
-  [
-    param("userId").isInt().withMessage("User ID must be a valid integer."),
-  ],
+  [param("userId").isInt().withMessage("Invalid user ID")],
   userController.deleteUser
 );
 router.get(

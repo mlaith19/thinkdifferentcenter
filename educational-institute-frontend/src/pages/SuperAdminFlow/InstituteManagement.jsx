@@ -19,7 +19,7 @@ import {
   Fab,
   Chip,
   CircularProgress,
-  Dialog,
+  Dialog,DialogContentText,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -51,7 +51,12 @@ const InstituteManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteBranchDialogOpen, setDeleteBranchDialogOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
-
+  const [openAddBranchDialog, setOpenAddBranchDialog] = useState(false);
+  const [newBranch, setNewBranch] = useState({
+    name: "",
+    address: "",
+    phone: "",
+  });
   const [name, setName] = useState(institute?.name || "");
   const [email, setEmail] = useState(institute?.email || "");
   const [startDate, setStartDate] = useState(institute?.startDate || "");
@@ -66,11 +71,30 @@ const InstituteManagement = () => {
       fetchInstitute();
     }
   }, [id, institute]);
-
+  const handleOpenAddBranch = () => setOpenAddBranchDialog(true);
+  const handleCloseAddBranch = () => {
+    setOpenAddBranchDialog(false);
+    setNewBranch({ name: "", address: "", phone: "" });
+  };  const handleAddBranchNew = async () => {
+    try {
+      const response = await api.post(`/institute/${institute.id}/branch`, newBranch);
+      setBranches([...branches, response.data.data]);
+      setSnackbarMessage("Branch added successfully");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      handleCloseAddBranch();
+    } catch (error) {
+      setSnackbarMessage(error.response?.data?.message || "Failed to add branch");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error adding branch:", error);
+    }
+  };
   const fetchInstitute = async () => {
+ 
     try {
       setLoading(true);
-      const response = await api.get(`/institute/${id}`);
+      const response = await api.get(`/institute/${institute.id}`);
       const instituteData = response.data.data;
       setInstitute(instituteData);
       setName(instituteData.name);
@@ -89,7 +113,7 @@ const InstituteManagement = () => {
     }
   };
 
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = async () => {   
     try {
       const updatedInstitute = {
         name,
@@ -100,19 +124,31 @@ const InstituteManagement = () => {
           fullName: adminName,
           email: adminEmail,
         },
-        branches,
+        branches: branches.map(branch => ({
+          id: branch.id || null, // Send null for new branches
+          name: branch.name,
+          address: branch.address,
+          phone: branch.phone
+        })),
         status,
       };
-
-      await api.put(`/institute/${id}`, updatedInstitute);
+  
+      const response = await api.put(`/institute/${institute.id}`, updatedInstitute);
+      
+      // Update local state with returned data
+      setInstitute(response.data.data);
+      setBranches(response.data.data.branches);
+      
+      fetchInstitute();
       setSnackbarMessage("Institute updated successfully.");
       setSnackbarSeverity("success");
+
       setSnackbarOpen(true);
     } catch (error) {
-      setSnackbarMessage("Failed to update institute.");
+      setSnackbarMessage(error.response?.data?.message || "Failed to update institute.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      console.error("Error updating institute:", error);
+      console.error("Update error:", error);
     }
   };
 
@@ -233,7 +269,42 @@ const InstituteManagement = () => {
           label={status === "active" ? "Active" : "Blocked"}
         />
       </Box>
-
+      <Dialog open={openAddBranchDialog} onClose={handleCloseAddBranch}>
+        <DialogTitle>Add New Branch</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Please fill in the details for the new branch
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Branch Name"
+            fullWidth
+            value={newBranch.name}
+            onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
+          />
+          <TextField
+            margin="dense"
+            label="Address"
+            fullWidth
+            value={newBranch.address}
+            onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
+          />
+          <TextField
+            margin="dense"
+            label="Phone"
+            fullWidth
+            value={newBranch.phone}
+            onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddBranch}>Cancel</Button>
+          <Button onClick={handleAddBranchNew} variant="contained" color="primary">
+            Add Branch
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
         <Grid container spacing={4}>
           {/* Institute Details */}
@@ -415,7 +486,7 @@ const InstituteManagement = () => {
         color="primary"
         aria-label="add"
         sx={{ position: "fixed", bottom: 16, right: 16 }}
-        onClick={handleAddBranch}
+        onClick={handleOpenAddBranch}
       >
         <AddIcon />
       </Fab>
