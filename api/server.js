@@ -107,12 +107,26 @@ const initializeServer = async () => {
   app.use("/api/tasks", taskRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/users", userRoutes);
+  app.use((req, res, next) => {
+    req.auditUser = req.user?.id || null;
+    next();
+  });
   app.use("/api/institute", instituteRoutes);
   app.use("/api/teacher", teacherRoutes);
   app.use("/api/student", studentRoutes);
   app.use("/api/accountant", accountantRoutes);
   app.use("/api/crm", crmRoutes);
-
+  app.use((req, res, next) => {
+    res.status(404).json({
+      succeed: false,
+      message: 'Route not found.',
+      data: null,
+      errorDetails: {
+        code: 404,
+        details: `The requested URL ${req.originalUrl} was not found on this server.`
+      }
+    });
+  });
   // Start the server
   const PORT = process.env.DEV_API_PORT || 5000;
   app.listen(PORT, () => {

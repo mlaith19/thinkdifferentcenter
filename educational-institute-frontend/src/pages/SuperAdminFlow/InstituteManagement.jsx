@@ -302,91 +302,92 @@ const InstituteManagement = () => {
               Branches
             </Typography>
             {branches.map((branch, index) => (
-              <Paper key={branch.id} elevation={1} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    Branch {index + 1}
-                  </Typography>
-                  <IconButton
-                    color="error"
-                    onClick={() => {
-                      setBranchToDelete(branch.id);
-                      setDeleteBranchDialogOpen(true);
-                    }}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-                <TextField
-                  fullWidth
-                  label="Branch Name"
-                  value={branch.name}
-                  onChange={(e) => {
-                    const updatedBranches = [...branches];
-                    updatedBranches[index].name = e.target.value;
-                    setBranches(updatedBranches);
-                  }}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Address"
-                  value={branch.address}
-                  onChange={(e) => {
-                    const updatedBranches = [...branches];
-                    updatedBranches[index].address = e.target.value;
-                    setBranches(updatedBranches);
-                  }}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  value={branch.phone}
-                  onChange={(e) => {
-                    const updatedBranches = [...branches];
-                    updatedBranches[index].phone = e.target.value;
-                    setBranches(updatedBranches);
-                  }}
-                  sx={{ mb: 2 }}
-                />
+  <Paper key={branch.id} elevation={1} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+    <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+        Branch {index + 1}
+      </Typography>
+      <IconButton
+        color="error"
+        onClick={() => {
+          setBranchToDelete(branch.id);
+          setDeleteBranchDialogOpen(true);
+        }}
+      >
+        <DeleteIcon />
+      </IconButton>
+    </Box>
+    <TextField
+      fullWidth
+      label="Branch Name"
+      value={branch.name}
+      onChange={(e) => {
+        const updatedBranches = [...branches];
+        updatedBranches[index].name = e.target.value;
+        setBranches(updatedBranches);
+      }}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      fullWidth
+      label="Address"
+      value={branch.address}
+      onChange={(e) => {
+        console.log( branch.users );
+        const updatedBranches = [...branches];
+        updatedBranches[index].address = e.target.value;
+        setBranches(updatedBranches);
+      }}
+      sx={{ mb: 2 }}
+    />
+    <TextField
+      fullWidth
+      label="Phone"
+      value={branch.phone}
+      onChange={(e) => {
+        const updatedBranches = [...branches];
+        updatedBranches[index].phone = e.target.value;
+        setBranches(updatedBranches);
+      }}
+      sx={{ mb: 2 }}
+    />
 
-                {/* Users Section */}
-                <Typography variant="subtitle2" sx={{ mt: 2, fontWeight: "bold" }}>
-                  Users
+    {/* Users Section */}
+    <Typography variant="subtitle2" sx={{ mt: 2, fontWeight: "bold" }}>
+      Users
+    </Typography>
+    <List>
+      {branch.users?.map((user) => (
+        <ListItem key={user.id}>
+          <Avatar sx={{ bgcolor: getRoleColor(user.role), mr: 2 }}>
+            {user.fullName.charAt(0)}
+          </Avatar>
+          <ListItemText
+            primary={user.fullName}
+            secondary={
+              <>
+                <Typography variant="body2" color="text.secondary">
+                  {user.email}
                 </Typography>
-                <List>
-                  {branch.users?.map((user) => (
-                    <ListItem key={user.id}>
-                      <Avatar sx={{ bgcolor: getRoleColor(user.role), mr: 2 }}>
-                        {user.fullName.charAt(0)}
-                      </Avatar>
-                      <ListItemText
-                        primary={user.fullName}
-                        secondary={
-                          <>
-                            <Typography variant="body2" color="text.secondary">
-                              {user.email}
-                            </Typography>
-                            <Chip
-                              label={user.role}
-                              color={getRoleColor(user.role)}
-                              size="small"
-                              sx={{ mt: 1 }}
-                            />
-                          </>
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton edge="end" aria-label="delete">
-                          <DeleteIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            ))}
+                <Chip
+                  label={user.role}
+                  color={getRoleColor(user.role)}
+                  size="small"
+                  sx={{ mt: 1 }}
+                />
+              </>
+            }
+          />
+          <ListItemSecondaryAction>
+            <IconButton edge="end" aria-label="delete">
+              <DeleteIcon />
+            </IconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+      ))}
+    </List>
+  </Paper>
+))}
           </Grid>
         </Grid>
 

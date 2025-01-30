@@ -53,6 +53,10 @@ const User = sequelize.define(
         key: "id",
       },
     },
+      teachingHourType: {
+    type: DataTypes.ENUM('45min', '60min'),
+    allowNull: true
+  },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

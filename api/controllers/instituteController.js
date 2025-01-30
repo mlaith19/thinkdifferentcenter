@@ -152,6 +152,13 @@ const getAllInstitutes = async (req, res) => {
           model: Branch,
           as: "branches", // Use the alias defined in the association
           attributes: ["id", "name", "address", "phone"],
+          include: [
+            {
+              model: User,
+              as: "users",  // Alias for the users relationship
+              attributes: ["id", "username", "email", "fullName", "role"],
+            },
+          ],
         },
       ],
     });
@@ -218,7 +225,7 @@ const getInstituteById = async (req, res) => {
           attributes: ["id", "name", "address", "phone"],
           include: [
             {
-              model: User,
+              model: User,   as: "users", 
               attributes: ["id", "fullName", "email", "role"],
             },
           ],
