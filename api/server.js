@@ -31,12 +31,12 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Rate limiting middleware
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
+// // Rate limiting middleware
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // Limit each IP to 100 requests per windowMs
+// });
+// app.use(limiter);
 
 // Body parser middleware
 app.use(bodyParser.json());

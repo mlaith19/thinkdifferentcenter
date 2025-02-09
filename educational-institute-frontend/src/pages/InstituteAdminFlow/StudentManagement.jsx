@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -23,72 +23,53 @@ import {
   Chip,
   Switch,
 } from "@mui/material";
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Search as SearchIcon,
-} from "@mui/icons-material";
+import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from "@mui/icons-material";
 import FloatingActionButton from "../../components/FloatingActionButton";
+import api from "../../services/api";
+import { decodeToken } from "../../utils/decodeToken";
 
 const StudentManagement = () => {
   const navigate = useNavigate();
-
-  // Static student data for testing
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      birthDate: "2000-01-01",
-      points: 85,
-      attendance: 90,
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      birthDate: "2001-05-15",
-      points: 92,
-      attendance: 95,
-      isActive: true,
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      phone: "555-555-5555",
-      birthDate: "1999-12-25",
-      points: 78,
-      attendance: 80,
-      isActive: false,
-    },
-  ]);
-
+  const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({
-    name: "",
+    fullName: "",
     email: "",
     phone: "",
     birthDate: "",
-    points: "",
-    attendance: "",
+    branchId: "",
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [loading, setLoading] = useState(true);
 
-  // Handle search input
+  const token = localStorage.getItem("token");
+  const user = decodeToken(token);
+
+  useEffect(() => {
+    if (user && user.instituteId) {
+      fetchStudents();
+    }
+  }, [user]);
+
+  const fetchStudents = async () => {
+    try {
+      const response = await api.get(`/student/institute/${user.instituteId}/students`);
+      setStudents(response.data.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  // Open dialog for adding/editing a student
   const handleClickOpen = (student = null) => {
     if (student) {
       setSelectedStudent(student);
@@ -96,82 +77,87 @@ const StudentManagement = () => {
     } else {
       setSelectedStudent(null);
       setNewStudent({
-        name: "",
+        fullName: "",
         email: "",
         phone: "",
         birthDate: "",
-        points: "",
-        attendance: "",
+        branchId: "",
       });
     }
     setOpenDialog(true);
   };
 
-  // Close dialog
   const handleClose = () => {
     setOpenDialog(false);
     setSelectedStudent(null);
     setNewStudent({
-      name: "",
+      fullName: "",
       email: "",
       phone: "",
       birthDate: "",
-      points: "",
-      attendance: "",
+      branchId: "",
     });
   };
 
-  // Save or update student
-  const handleSave = () => {
-    if (selectedStudent) {
-      // Update existing student
-      const updatedStudents = students.map((student) =>
-        student.id === selectedStudent.id ? { ...student, ...newStudent } : student
-      );
-      setStudents(updatedStudents);
-      setSnackbarMessage("Student updated successfully.");
-    } else {
-      // Add new student
-      const newStudentWithId = { ...newStudent, id: students.length + 1 };
-      setStudents([...students, newStudentWithId]);
-      setSnackbarMessage("Student added successfully.");
+  const handleSave = async () => {
+    try {
+      if (selectedStudent) {
+        await api.put(`/students/${selectedStudent.id}`, newStudent);
+        setSnackbarMessage("Student updated successfully.");
+      } else {
+        await api.post(`/institute/${user.instituteId}/students`, newStudent);
+        setSnackbarMessage("Student added successfully.");
+      }
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      fetchStudents();
+      handleClose();
+    } catch (error) {
+      setSnackbarMessage("Failed to save student.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error saving student:", error);
     }
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
-    handleClose();
   };
 
-  // Delete a student
-  const handleDeleteStudent = (id) => {
-    const updatedStudents = students.filter((student) => student.id !== id);
-    setStudents(updatedStudents);
-    setSnackbarMessage("Student deleted successfully.");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+  const handleDeleteStudent = async (id) => {
+    try {
+      await api.delete(`/students/${id}`);
+      setSnackbarMessage("Student deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      fetchStudents();
+    } catch (error) {
+      setSnackbarMessage("Failed to delete student.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error deleting student:", error);
+    }
   };
 
-  // Toggle student status
-  const handleToggleStatus = (id) => {
-    const updatedStudents = students.map((student) =>
-      student.id === id ? { ...student, isActive: !student.isActive } : student
-    );
-    setStudents(updatedStudents);
-    setSnackbarMessage("Student status updated successfully.");
-    setSnackbarSeverity("success");
-    setSnackbarOpen(true);
+  const handleToggleStatus = async (id, isActive) => {
+    try {
+      await api.put(`/students/${id}`, { isActive: !isActive });
+      setSnackbarMessage("Student status updated successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      fetchStudents();
+    } catch (error) {
+      setSnackbarMessage("Failed to update student status.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error updating student status:", error);
+    }
   };
 
-  // Navigate to student details
   const handleRowClick = (studentId) => {
     navigate(`/students/${studentId}`);
   };
 
-  // Filter students based on search query
   const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+    student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Close snackbar
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -181,7 +167,6 @@ const StudentManagement = () => {
       <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
         Student Management
       </Typography>
-
       {/* Search Field */}
       <Box sx={{ mb: 4, display: "flex", alignItems: "center" }}>
         <TextField
@@ -195,7 +180,6 @@ const StudentManagement = () => {
           }}
         />
       </Box>
-
       {/* Students Table */}
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
         <Table>
@@ -205,31 +189,19 @@ const StudentManagement = () => {
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
               <TableCell>Birth Date</TableCell>
-              <TableCell>Points</TableCell>
-              <TableCell>Attendance</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredStudents.map((student) => (
-              <TableRow
-                key={student.id}
-                hover
-                onClick={() => handleRowClick(student.id)}
-                sx={{ cursor: "pointer" }}
-              >
-                <TableCell>{student.name}</TableCell>
+              <TableRow key={student.id} hover onClick={() => handleRowClick(student.id)} sx={{ cursor: "pointer" }}>
+                <TableCell>{student.fullName}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
                 <TableCell>{student.birthDate}</TableCell>
-                <TableCell>{student.points}</TableCell>
-                <TableCell>{student.attendance}%</TableCell>
                 <TableCell>
-                  <Chip
-                    label={student.isActive ? "Active" : "Inactive"}
-                    color={student.isActive ? "success" : "error"}
-                  />
+                  <Chip label={student.isActive ? "Active" : "Inactive"} color={student.isActive ? "success" : "error"} />
                 </TableCell>
                 <TableCell>
                   <IconButton
@@ -254,7 +226,7 @@ const StudentManagement = () => {
                     checked={student.isActive}
                     onChange={(e) => {
                       e.stopPropagation();
-                      handleToggleStatus(student.id);
+                      handleToggleStatus(student.id, student.isActive);
                     }}
                     color="primary"
                   />
@@ -264,15 +236,13 @@ const StudentManagement = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
       {/* Floating Action Button for Adding Student */}
       <FloatingActionButton
-      key={"addStudent"}
-        onClick={() => handleClickOpen()} // Open dialog for adding a new student
+        key={"addStudent"}
+        onClick={() => handleClickOpen()}
         icon={<AddIcon />}
-        label="Add Student" // Add a label to the FAB
+        label="Add Student"
       />
-
       {/* Add/Edit Student Dialog */}
       <Dialog open={openDialog} onClose={handleClose}>
         <DialogTitle>{selectedStudent ? "Edit Student" : "Add New Student"}</DialogTitle>
@@ -282,8 +252,8 @@ const StudentManagement = () => {
             margin="dense"
             label="Name"
             fullWidth
-            value={newStudent.name}
-            onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+            value={newStudent.fullName}
+            onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
           />
           <TextField
             margin="dense"
@@ -308,22 +278,6 @@ const StudentManagement = () => {
             value={newStudent.birthDate}
             onChange={(e) => setNewStudent({ ...newStudent, birthDate: e.target.value })}
           />
-          <TextField
-            margin="dense"
-            label="Points"
-            fullWidth
-            type="number"
-            value={newStudent.points}
-            onChange={(e) => setNewStudent({ ...newStudent, points: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Attendance"
-            fullWidth
-            type="number"
-            value={newStudent.attendance}
-            onChange={(e) => setNewStudent({ ...newStudent, attendance: e.target.value })}
-          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -334,14 +288,8 @@ const StudentManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Snackbar for Notifications */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
           {snackbarMessage}
         </Alert>

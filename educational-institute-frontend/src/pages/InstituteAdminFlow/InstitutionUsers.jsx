@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import api from "../../services/api";
+import api from "../../services/api";import { decodeToken } from "../../utils/decodeToken";
 import {
   Box,
   Typography,
@@ -38,6 +38,7 @@ import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Search as Searc
 
 const InstitutionUsers = () => {
   const location = useLocation();
+  const token = localStorage.getItem("token"); const user = decodeToken(token);
   const instituteId = location.state?.instituteId;
 
   const [users, setUsers] = useState([]);
@@ -66,7 +67,7 @@ const InstitutionUsers = () => {
     setLoading(true);
     try {
       const response = await api.get("/users/institute", {
-        params: { instituteId },
+        params: { instituteId :user.instituteId},
       });
       setUsers(response.data.data);
     } catch (error) {
@@ -82,7 +83,7 @@ const InstitutionUsers = () => {
   // Fetch branches from the API
   const fetchBranches = async () => {
     try {
-      const response = await api.get(`/institute/${instituteId}/branches`);
+      const response = await api.get(`/institute/${user.instituteId}/branches`);
       setBranches(response.data.branches || []);
     } catch (error) {
       setSnackbarMessage("Failed to fetch branches. Cannot create users.");

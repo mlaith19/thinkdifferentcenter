@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -14,9 +14,6 @@ import {
   FormLabel,
   Grid,
   Button,
-  InputLabel,
-  Select,
-  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -26,6 +23,9 @@ import {
   TableRow,
   IconButton,
   Tooltip,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -33,49 +33,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FloatingActionButton from "../../components/FloatingActionButton";
 import { useNavigate } from "react-router-dom";
-
-// Dummy data for courses
-const dummyCourses = [
-  {
-    id: 1,
-    name: "Mathematics 101",
-    startDate: "2023-10-01",
-    endDate: "2023-12-15",
-    instructor: "Dr. Smith",
-    fromAge: 15,
-    toAge: 18,
-    registrationStartDate: "2023-09-01",
-    registrationEndDate: "2023-09-30",
-    priceType: "entire",
-    price: 200,
-  },
-  {
-    id: 2,
-    name: "Physics 101",
-    startDate: "2023-11-01",
-    endDate: "2024-01-15",
-    instructor: "Dr. Johnson",
-    fromAge: 16,
-    toAge: 19,
-    registrationStartDate: "2023-10-01",
-    registrationEndDate: "2023-10-31",
-    priceType: "session",
-    price: 20,
-  },
-  {
-    id: 3,
-    name: "Chemistry 101",
-    startDate: "2024-01-10",
-    endDate: "2024-04-20",
-    instructor: "Dr. Brown",
-    fromAge: 14,
-    toAge: 17,
-    registrationStartDate: "2023-12-01",
-    registrationEndDate: "2023-12-31",
-    priceType: "free",
-    price: 0,
-  },
-];
+import { decodeToken } from "../../utils/decodeToken";
+import api from "../../services/api";
 
 const CourseManagement = () => {
   const [open, setOpen] = useState(false);
@@ -90,8 +49,44 @@ const CourseManagement = () => {
   const [priceType, setPriceType] = useState("entire");
   const [price, setPrice] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const navigate = useNavigate();
 
+  // Decode token to get user information
+  const token = localStorage.getItem("token");
+  const user = decodeToken(token);
+  const instituteId = user?.instituteId;
+
+  // Fetch courses on component mount
+  useEffect(() => {
+    if (instituteId) {
+      fetchCourses();
+    }
+  }, [instituteId]);
+
+  // Fetch courses from the API
+  const fetchCourses = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/courses", {
+        params: { instituteId },
+      });
+      setCourses(response.data);
+    } catch (error) {
+      setSnackbarMessage("Failed to fetch courses.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle dialog open/close
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -100,33 +95,69 @@ const CourseManagement = () => {
     setOpen(false);
   };
 
-  const handleSave = () => {
-    // Save course logic here
-    console.log({
-      courseName,
-      startDate,
-      endDate,
-      instructor,
-      fromAge,
-      toAge,
-      registrationStartDate,
-      registrationEndDate,
-      priceType,
-      price,
-    });
-    handleClose();
+  // Handle save new course
+  const handleSave = async () => {
+    try {
+      const newCourse = {
+        name: courseName,
+        paymentType: priceType,
+        price: priceType === "free" ? 0 : price,
+        registrationStartDate,
+        registrationEndDate,
+        minAge: fromAge,
+        maxAge: toAge,
+        instituteId,
+        branchId: user.branchId,
+      };
+
+      await api.post("/courses/create", newCourse);
+      fetchCourses();
+      setSnackbarMessage("Course created successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+      handleClose();
+    } catch (error) {
+      setSnackbarMessage("Failed to create course.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error creating course:", error);
+    }
   };
 
+  // Handle search input
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  const filteredCourses = dummyCourses.filter((course) =>
+  // Filter courses based on search query
+  const filteredCourses = courses.filter((course) =>
     course.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Handle view details
   const handleViewDetails = (courseId) => {
     navigate(`/course-manage-details/${courseId}`);
+  };
+
+  // Handle delete course
+  const handleDeleteCourse = async (courseId) => {
+    try {
+      await api.delete(`/courses/${courseId}`);
+      fetchCourses();
+      setSnackbarMessage("Course deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Failed to delete course.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error deleting course:", error);
+    }
+  };
+
+  // Close snackbar
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -150,46 +181,55 @@ const CourseManagement = () => {
       </Box>
 
       {/* Courses Table */}
-      <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Course Name</TableCell>
-              <TableCell>Instructor</TableCell>
-              <TableCell>Start Date</TableCell>
-              <TableCell>End Date</TableCell>
-              <TableCell>Price Type</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredCourses.map((course) => (
-              <TableRow key={course.id}>
-                <TableCell>{course.name}</TableCell>
-                <TableCell>{course.instructor}</TableCell>
-                <TableCell>{course.startDate}</TableCell>
-                <TableCell>{course.endDate}</TableCell>
-                <TableCell>{course.priceType}</TableCell>
-                <TableCell>{course.price}</TableCell>
-                <TableCell>
-                  <Tooltip title="Edit">
-                    <IconButton onClick={() => handleViewDetails(course.id)} color="primary">
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete">
-                    <IconButton color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
+      {loading ? (
+        <CircularProgress />
+      ) : filteredCourses.length === 0 ? (
+        <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
+          No courses found for this institute.
+        </Typography>
+      ) : (
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Course Name</TableCell>
+                <TableCell>Instructor</TableCell>
+                <TableCell>Start Date</TableCell>
+                <TableCell>End Date</TableCell>
+                <TableCell>Price Type</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {filteredCourses.map((course) => (
+                <TableRow key={course.id}>
+                  <TableCell>{course.name}</TableCell>
+                  <TableCell>{course.instructor}</TableCell>
+                  <TableCell>{course.registrationStartDate}</TableCell>
+                  <TableCell>{course.registrationEndDate}</TableCell>
+                  <TableCell>{course.paymentType}</TableCell>
+                  <TableCell>{course.price}</TableCell>
+                  <TableCell>
+                    <Tooltip title="Edit">
+                      <IconButton onClick={() => handleViewDetails(course.id)} color="primary">
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton onClick={() => handleDeleteCourse(course.id)} color="error">
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
+      {/* Floating Action Button for Adding Course */}
       <FloatingActionButton onClick={handleClickOpen} label="Add Course" icon={<AddIcon />} />
 
       {/* Dialog for Creating a New Course */}
@@ -203,52 +243,6 @@ const CourseManagement = () => {
                 label="Course Name"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Start Date"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="End Date"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Instructor"
-                value={instructor}
-                onChange={(e) => setInstructor(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="From Age"
-                type="number"
-                value={fromAge}
-                onChange={(e) => setFromAge(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="To Age"
-                type="number"
-                value={toAge}
-                onChange={(e) => setToAge(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -271,6 +265,24 @@ const CourseManagement = () => {
                 onChange={(e) => setRegistrationEndDate(e.target.value)}
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="From Age"
+                type="number"
+                value={fromAge}
+                onChange={(e) => setFromAge(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="To Age"
+                type="number"
+                value={toAge}
+                onChange={(e) => setToAge(e.target.value)}
+              />
+            </Grid>
             <Grid item xs={12}>
               <FormControl component="fieldset">
                 <FormLabel component="legend">Course Price Type</FormLabel>
@@ -280,7 +292,7 @@ const CourseManagement = () => {
                   onChange={(e) => setPriceType(e.target.value)}
                 >
                   <FormControlLabel value="entire" control={<Radio />} label="The price of the entire course" />
-                  <FormControlLabel value="session" control={<Radio />} label="Price per session" />
+                  <FormControlLabel value="per_session" control={<Radio />} label="Price per session" />
                   <FormControlLabel value="free" control={<Radio />} label="Free" />
                 </RadioGroup>
               </FormControl>
@@ -307,6 +319,18 @@ const CourseManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for Notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

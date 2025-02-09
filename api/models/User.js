@@ -53,14 +53,25 @@ const User = sequelize.define(
         key: "id",
       },
     },
-      teachingHourType: {
-    type: DataTypes.ENUM('45min', '60min'),
-    allowNull: true
-  },
+    teachingHourType: {
+      type: DataTypes.ENUM("45min", "60min"),
+      allowNull: true,
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true, // New column with default value
+    },
+    birthDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },   phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      // validate: {
+      //   is: /^[0-9]{10,15}$/, // Adjust the regex pattern based on your requirements
+      //   msg: "Please provide a valid phone number.",
+      // },
     },
   },
   {

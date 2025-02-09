@@ -2,15 +2,14 @@ const express = require("express");
 const { body, param } = require("express-validator");
 const CourseController = require("../controllers/CourseController");
 const { authenticate } = require("../middlewares/auth_JWT");
-const { authorizeInstituteAdmin } = require("../middlewares/authorizeInstituteAdmin");
-
+ 
 const router = express.Router();
 
 // Create a new course
 router.post(
   "/create",
   authenticate,
-  authorizeInstituteAdmin,
+ 
   [
     body("name").notEmpty().withMessage("Course name is required."),
     body("paymentType").isIn(["free", "per_session", "full_course"]).withMessage("Invalid payment type."),
@@ -37,7 +36,7 @@ router.get(
 router.put(
   "/:courseId",
   authenticate,
-  authorizeInstituteAdmin,
+ 
   [
     param("courseId").isInt().withMessage("Course ID must be a valid integer."),
     body("name").optional().notEmpty().withMessage("Course name is required."),
@@ -52,7 +51,7 @@ router.put(
 router.delete(
   "/:courseId",
   authenticate,
-  authorizeInstituteAdmin,
+ 
   [param("courseId").isInt().withMessage("Course ID must be a valid integer.")],
   CourseController.deleteCourse
 );

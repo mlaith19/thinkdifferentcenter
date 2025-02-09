@@ -69,6 +69,7 @@ const createInstitute = async (req, res) => {
       role: "institute_admin",
       branchId: instituteBranch.id,
       instituteId: newInstitute.id,
+      phone: phone
     });
 
     const token = generateToken(adminUser);
@@ -136,7 +137,77 @@ const createBranch = async (req, res) => {
     });
   }
 };
+// Get financial reports for an institute
+const getFinancialReports = async (req, res) => {
+  const { instituteId } = req.params;
 
+  try {
+    const financialReports = await FinancialReport.findAll({
+      where: { instituteId },
+      attributes: ["id", "totalRevenue", "totalExpenses", "netProfit", "period", "startDate", "endDate"],
+    });
+
+    if (!financialReports || financialReports.length === 0) {
+      return res.status(404).json({
+        succeed: false,
+        message: "No financial reports found for this institute.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: "Financial reports fetched successfully.",
+      data: financialReports,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
+
+// Get courses for an institute
+const getCourses = async (req, res) => {
+  const { instituteId } = req.params;
+
+  try {
+    const courses = await Course.findAll({
+      where: { instituteId },
+      attributes: ["id", "name", "description", "paymentType", "price", "registrationStartDate", "registrationEndDate"],
+    });
+
+    if (!courses || courses.length === 0) {
+      return res.status(404).json({
+        succeed: false,
+        message: "No courses found for this institute.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: "Courses fetched successfully.",
+      data: courses,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
 // Get all institutes
 const getAllInstitutes = async (req, res) => {
   try {
@@ -588,4 +659,6 @@ module.exports = {
   getBranchesByInstituteId, deleteBranch,
   updateInstitute 
   ,getBranchesByInstituteIdPath
+  ,getCourses,
+  getFinancialReports
 };

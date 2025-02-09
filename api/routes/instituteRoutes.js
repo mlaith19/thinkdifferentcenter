@@ -3,15 +3,14 @@ const { body } = require("express-validator");
 const instituteController = require("../controllers/instituteController");
 const { authenticate } = require("../middlewares/auth_JWT");
 const { authorizeSuperAdmin } = require("../middlewares/authorizeSuperAdmin.js");
-
+const { authorizeAdmin } = require("../middlewares/authorizeAdmin.js");
 const router = express.Router();
 
 // Create a new institute
 router.post(
   "/create", 
   authenticate,       // First authenticate the user
-  authorizeSuperAdmin, // Then check if the user is a super admin
-  [
+   [
     body("name").not().isEmpty().withMessage("Institute name is required."),
     body("email").isEmail().withMessage("Valid email is required."),
     body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters."),
@@ -24,8 +23,7 @@ router.post(
 router.post(
     "/:instituteId/branch", 
     authenticate,       // Authenticate the user
-    authorizeSuperAdmin, // Ensure only super admin can create a branch
-    [
+     [
       body("name").not().isEmpty().withMessage("Branch name is required."),
       body("address").optional(),
       body("phone").optional(),
@@ -34,22 +32,22 @@ router.post(
   );
 
 // Get all institutes
-router.get("/", authenticate, authorizeSuperAdmin, instituteController.getAllInstitutes);
+router.get("/", authenticate,  instituteController.getAllInstitutes);
 
 // Get institute by ID
-router.get("/:id", authenticate, authorizeSuperAdmin, instituteController.getInstituteById);
+router.get("/:id", authenticate,   instituteController.getInstituteById);
 
 // Delete all institutes
 router.delete(
   "/delete-all",
   authenticate,          // Authenticate the user
-  authorizeSuperAdmin,   // Ensure only super admin can delete
+    // Ensure only super admin can delete
   instituteController.deleteAllInstitutes // Controller to handle deletion
 );
 router.put(
   "/:id",
   authenticate,
-  authorizeSuperAdmin,
+ 
   [
     body("name").optional().notEmpty(),
     body("email").optional().isEmail(),
@@ -63,27 +61,27 @@ router.put(
 // Get branches by institute ID
 router.get(
   "/branch",
-  authenticate,        
+  authenticate,    
   instituteController.getBranchesByInstituteId  
 );
-router.get("/:instituteId/branches", authenticate, instituteController.getBranchesByInstituteIdPath);
+router.get("/:instituteId/branches",   authenticate, instituteController.getBranchesByInstituteIdPath);
 // Delete institute by ID
 router.delete(
   "/:id", 
   authenticate,          // Authenticate the user
-  authorizeSuperAdmin,   // Ensure only super admin can delete
+    // Ensure only super admin can delete
   instituteController.deleteInstituteById // Controller to handle deletion by ID
 );
 router.delete(
   "/:instituteId/branch/:branchId",
   authenticate,
-  authorizeSuperAdmin,
+ 
   instituteController.deleteBranch
 );
 router.post(
   "/:instituteId/branch", 
   authenticate,
-  authorizeSuperAdmin,
+ 
   [
     body("name").not().isEmpty().withMessage("Branch name is required."),
     body("address").optional(),
@@ -92,4 +90,9 @@ router.post(
   instituteController.createBranch
 );
  
+// Get financial reports for an institute
+router.get("/:instituteId/financial-reports", authenticate, instituteController.getFinancialReports);
+
+// Get courses for an institute
+router.get("/:instituteId/courses", authenticate, instituteController.getCourses);
 module.exports = router;

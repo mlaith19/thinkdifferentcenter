@@ -4,10 +4,16 @@ const { authenticate } = require("../middlewares/auth_JWT");
 
 const router = express.Router();
 
-// عرض جدول الحصص
-router.get("/schedule", authenticate, StudentController.getStudentSchedule);
+// Get all students by instituteId
+router.get("/institute/:instituteId/students", authenticate, StudentController.getStudentsByInstituteId);
 
-// عرض الحضور والنقاط
-router.get("/attendance-points", authenticate, StudentController.getStudentAttendanceAndPoints);
+// Add a new student
+router.post("/institute/:instituteId/students", authenticate, StudentController.addStudent);
+
+// Update a student
+router.put("/students/:studentId", authenticate, StudentController.updateStudent);
+
+// Delete a student
+router.delete("/students/:studentId", authenticate, StudentController.deleteStudent);
 
 module.exports = router;

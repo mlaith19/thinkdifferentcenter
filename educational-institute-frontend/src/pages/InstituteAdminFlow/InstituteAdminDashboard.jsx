@@ -11,39 +11,119 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  CircularProgress,
 } from "@mui/material";
 import {
   School as SchoolIcon,
   People as PeopleIcon,
   Class as ClassIcon,
   Assignment as AssignmentIcon,
-  Notifications as NotificationsIcon,
   Settings as SettingsIcon,
-  ExitToApp as ExitToAppIcon,
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
-import Navbar from "../../components/Navbar"; // Import the Navbar component
+import Navbar from "../../components/Navbar";
+import api from "../../services/api";
+import { decodeToken } from "../../utils/decodeToken";
 
 const InstituteAdminDashboard = () => {
-  // Static data for demonstration
-  const branches = [
-    { id: 1, name: "Main Branch", address: "123 Main St", phone: "555-1234" },
-    { id: 2, name: "Downtown Branch", address: "456 Downtown St", phone: "555-5678" },
-  ];
+  const [loadingInstitute, setLoadingInstitute] = useState(true);
+  const [loadingBranches, setLoadingBranches] = useState(true);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingFinancialReports, setLoadingFinancialReports] = useState(true);
+  const [error, setError] = useState("");
+  const [institute, setInstitute] = useState(null);
+  const [branches, setBranches] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [financialReports, setFinancialReports] = useState([]);
 
-  const courses = [
-    { id: 1, name: "Mathematics", paymentType: "full_course", price: 200 },
-    { id: 2, name: "Science", paymentType: "per_session", price: 50 },
-  ];
+  // Decode token to get user information
+  const token = localStorage.getItem("token");
+  const user = decodeToken(token);
 
-  const financialReports = [
-    { id: 1, period: "monthly", totalRevenue: 10000, netProfit: 5000 },
-    { id: 2, period: "quarterly", totalRevenue: 30000, netProfit: 15000 },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !user.instituteId) return;
+  
+      try {
+        await Promise.all([
+          fetchInstitute(),
+          fetchBranches(),
+          fetchCourses(),
+          fetchFinancialReports(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+  
+    fetchData(); // Invoke the async function
+  }, [user]);
+  
+
+  const fetchInstitute = async () => {
+    try {
+      const response = await api.get(`/institute/${user.instituteId}`);
+      console.log(response.data.data);
+      setInstitute(response.data.data);
+    } catch (error) {
+      setError("Failed to fetch institute data.");
+      console.error("Error fetching institute:", error);
+    } finally {
+      setLoadingInstitute(false);
+    }
+  };
+
+  const fetchBranches = async () => {
+    try {
+      const response = await api.get(`/institute/${user.instituteId}/branches`);
+      console.log(response.data.branches);
+      setBranches(response.data.branches);
+    } catch (error) {
+      setError("Failed to fetch branches data.");
+      console.error("Error fetching branches:", error);
+    } finally {
+      setLoadingBranches(false);
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get(`/institute/${user.instituteId}/courses`);
+      console.log(response.data.data);
+      setCourses(response.data.data);
+    } catch (error) {
+      setError("Failed to fetch courses data.");
+      console.error("Error fetching courses:", error);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  const fetchFinancialReports = async () => {
+    try {
+      const response = await api.get(`/institute/${user.instituteId}/financial-reports`);
+      console.log(response.data.data);
+      setFinancialReports(response.data.data);
+    } catch (error) {
+      setError("Failed to fetch financial reports data.");
+      console.error("Error fetching financial reports:", error);
+    } finally {
+      setLoadingFinancialReports(false);
+    }
+  };
+
+  if (!user || !user.instituteId) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h6" color="error">
+          No institute data found.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -57,18 +137,11 @@ const InstituteAdminDashboard = () => {
           <Grid item xs={12} md={3}>
             <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
               <Box sx={{ textAlign: "center", mb: 3 }}>
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    bgcolor: "primary.main",
-                    mb: 2,
-                  }}
-                >
+                <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main", mb: 2 }}>
                   <SchoolIcon fontSize="large" />
                 </Avatar>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Institute Name
+                  {institute?.name || "Institute Name"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Admin
@@ -133,21 +206,31 @@ const InstituteAdminDashboard = () => {
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
                     Branches
                   </Typography>
-                  {branches.map((branch) => (
-                    <Accordion key={branch.id}>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography>{branch.name}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Typography>
-                          <strong>Address:</strong> {branch.address}
-                        </Typography>
-                        <Typography>
-                          <strong>Phone:</strong> {branch.phone}
-                        </Typography>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
+                  {loadingBranches ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : branches.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No branches found.
+                    </Typography>
+                  ) : (
+                    branches.map((branch) => (
+                      <Accordion key={branch.id}>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Typography>{branch.name}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Typography>
+                            <strong>Address:</strong> {branch.address}
+                          </Typography>
+                          <Typography>
+                            <strong>Phone:</strong> {branch.phone}
+                          </Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))
+                  )}
                 </Paper>
               </Grid>
 
@@ -157,16 +240,23 @@ const InstituteAdminDashboard = () => {
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
                     Courses
                   </Typography>
-                  <List>
-                    {courses.map((course) => (
-                      <ListItem key={course.id}>
-                        <ListItemText
-                          primary={course.name}
-                          secondary={`${course.paymentType} - $${course.price}`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                  {loadingCourses ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : courses.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No courses found.
+                    </Typography>
+                  ) : (
+                    <List>
+                      {courses.map((course) => (
+                        <ListItem key={course.id}>
+                          <ListItemText primary={course.name} secondary={`${course.paymentType} - $${course.price}`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
                 </Paper>
               </Grid>
 
@@ -176,16 +266,23 @@ const InstituteAdminDashboard = () => {
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
                     Financial Reports
                   </Typography>
-                  <List>
-                    {financialReports.map((report) => (
-                      <ListItem key={report.id}>
-                        <ListItemText
-                          primary={`${report.period} Report`}
-                          secondary={`Revenue: $${report.totalRevenue}, Profit: $${report.netProfit}`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                  {loadingFinancialReports ? (
+                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : financialReports.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      No financial reports found.
+                    </Typography>
+                  ) : (
+                    <List>
+                      {financialReports.map((report) => (
+                        <ListItem key={report.id}>
+                          <ListItemText primary={`${report.period} Report`} secondary={`Revenue: $${report.totalRevenue}, Profit: $${report.netProfit}`} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
                 </Paper>
               </Grid>
             </Grid>
