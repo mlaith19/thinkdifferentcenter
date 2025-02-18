@@ -44,7 +44,7 @@ app.use(bodyParser.json());
 // Database synchronization
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({   });  
+    await sequelize.sync({    alter: true});  
     console.log("Database tables have been synced.");
   } catch (err) {
     console.error("Error syncing database:", err);
@@ -103,7 +103,7 @@ const initializeServer = async () => {
   const crmRoutes = require("./routes/CRMRoute");
   const taskRoutes = require("./routes/TaskRoute");
   const notificationRoutes = require("./routes/NotificationRoute");
-
+  const courseRoutes = require("./routes/CourseRoute"); 
   app.use("/api/tasks", taskRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/users", userRoutes);
@@ -116,6 +116,8 @@ const initializeServer = async () => {
   app.use("/api/student", studentRoutes);
   app.use("/api/accountant", accountantRoutes);
   app.use("/api/crm", crmRoutes);
+  app.use("/api/courses", courseRoutes);
+  
   app.use((req, res, next) => {
     res.status(404).json({
       succeed: false,

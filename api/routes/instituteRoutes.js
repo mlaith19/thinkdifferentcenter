@@ -89,7 +89,7 @@ router.post(
   ],
   instituteController.createBranch
 );
- 
+router.get("/:instituteId/teachers", authenticate, instituteController.getTeachersByInstituteId);
 // Get financial reports for an institute
 router.get("/:instituteId/financial-reports", authenticate, instituteController.getFinancialReports);
 

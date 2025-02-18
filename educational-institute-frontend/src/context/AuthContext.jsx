@@ -9,23 +9,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Check if the user is authenticated on initial load
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const response = await api.get("/users/me");  
-          setUser(response.data);
-        }
-      } catch (error) {
-        console.error("Error checking authentication:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       if (token) {
+  //         const response = await api.get("/users/me");  
+  //         setUser(response.data);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking authentication:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    checkAuth();
-  }, []);
+  //   checkAuth();
+  // }, []);
 
   // Login function
   const login = async (email, password, navigateCallback) => {

@@ -649,6 +649,45 @@ const deleteBranch = async (req, res) => {
     });
   }
 };
+// Get all teachers by institute ID
+const getTeachersByInstituteId = async (req, res) => {
+  const { instituteId } = req.params;
+
+  try {
+      // Fetch all users with the role 'teacher' and the specified instituteId
+      const teachers = await User.findAll({
+          where: {
+              instituteId: instituteId,
+              role: 'teacher'
+          },
+          attributes: ["id", "username", "email", "fullName", "role", "branchId", "teachingHourType", "isActive", "birthDate", "phone"]
+      });
+
+      if (!teachers || teachers.length === 0) {
+          return res.status(404).json({
+              succeed: false,
+              message: "No teachers found for this institute.",
+              data: null,
+              errorDetails: null,
+          });
+      }
+
+      res.status(200).json({
+          succeed: true,
+          message: "Teachers fetched successfully.",
+          data: teachers,
+          errorDetails: null,
+      });
+  } catch (error) {
+      const { statusCode, errorMessage, errorDetails } = handleError(error);
+      res.status(statusCode).json({
+          succeed: false,
+          message: errorMessage,
+          data: null,
+          errorDetails,
+      });
+  }
+};
 module.exports = {
   createInstitute,
   createBranch,
@@ -660,5 +699,6 @@ module.exports = {
   updateInstitute 
   ,getBranchesByInstituteIdPath
   ,getCourses,
-  getFinancialReports
+  getFinancialReports ,
+  getTeachersByInstituteId
 };

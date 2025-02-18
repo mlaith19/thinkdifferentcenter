@@ -6,6 +6,7 @@ const Permission = require("./Permission");
 const RolePermission = require("./RolePermission");
 const Payment = require("./Payment");
 const Expense = require("./Expense");
+const Course = require("./Course");
 // تعريف العلاقات
 User.belongsToMany(Role, { through: "UserRoles", foreignKey: "userId" });
 Role.belongsToMany(User, { through: "UserRoles", foreignKey: "roleId" });
@@ -15,6 +16,7 @@ Institute.hasMany(User, { foreignKey: "instituteId" });
 
 User.belongsTo(Branch, { foreignKey: "branchId", as: "branch" }); // Alias: branch
 Branch.hasMany(User, { foreignKey: "branchId", as: "users" });     // Alias: users
+Branch.hasMany(Course, { foreignKey: "branchId", as: "courses" }); // Alias: courses
 // تعريف العلاقة بين Role و Permission
 Role.belongsToMany(Permission, { through: RolePermission, foreignKey: "roleId" });
 Permission.belongsToMany(Role, { through: RolePermission, foreignKey: "permissionId" });
