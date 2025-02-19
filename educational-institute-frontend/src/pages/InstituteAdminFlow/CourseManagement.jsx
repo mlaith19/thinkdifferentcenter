@@ -53,7 +53,7 @@ const CourseManagement = () => {
   const [registrationEndDate, setRegistrationEndDate] = useState("");
   const [fromAge, setFromAge] = useState("");
   const [toAge, setToAge] = useState("");
-  const [priceType, setPriceType] = useState("entire"); // Default value
+  const [priceType, setPriceType] = useState("full_course"); // Default value
   const [price, setPrice] = useState("");
   const [numberOfSessions, setNumberOfSessions] = useState(0);
   const [scheduleDays, setScheduleDays] = useState([]);
@@ -131,7 +131,7 @@ const [selectedTeacherName, setSelectedTeacherName] = useState("");
     setRegistrationEndDate("");
     setFromAge("");
     setToAge("");
-    setPriceType("entire"); // Reset to default
+    setPriceType("full_course"); // Reset to default
     setPrice("");
     setNumberOfSessions(0);
     setScheduleDays([]);
@@ -467,7 +467,11 @@ const [selectedTeacherName, setSelectedTeacherName] = useState("");
                                 <InputLabel>Select Teacher</InputLabel>
                                 <Select
                                     value={selectedTeacherId}
-                                    onChange={(e) => setSelectedTeacherId(e.target.value)}
+                                    onChange={(e) => {
+                                      const selectedTeacher = teachers.find(teacher => teacher.id === e.target.value);
+                                      setSelectedTeacherId(e.target.value);
+                                      setSelectedTeacherName(selectedTeacher ? selectedTeacher.fullName : "");
+                                    }}
                                     label="Select Teacher"
                                     required
                                 >

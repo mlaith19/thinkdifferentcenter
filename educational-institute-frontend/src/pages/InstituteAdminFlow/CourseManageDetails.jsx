@@ -36,6 +36,8 @@ const CourseManageDetails = () => {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+ const [students, setStudents] = useState([]); // State for students
+ const [studentsLoading, setStudentsLoading] = useState(true); // Loading state for students
 
   // Fetch course data on component mount
   useEffect(() => {
@@ -55,8 +57,22 @@ const CourseManageDetails = () => {
   
     fetchCourseDetails();
   }, [courseId]);
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await api.get(`/courses/${courseId}/students`);
+        setStudents(response.data.data); // Set the students data
+      } catch (err) {
+        console.error("Error fetching students:", err);
+      } finally {
+        setStudentsLoading(false);
+      }
+    };
 
-  if (loading) {
+    fetchStudents();
+  }, [courseId]);
+
+  if (loading|| studentsLoading) {
     return (
       <Box
         sx={{
@@ -93,15 +109,9 @@ const CourseManageDetails = () => {
   const scheduleDays = cleanAndParse(course.scheduleDays || "[]");
   const sessionDates = cleanAndParse(course.sessionDates || "[]");
 
-  // Dummy data for students and instructors
-  const students = [
-    { id: 1, name: "John Doe", email: "john@example.com" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com" },
-  ];
+ 
 
-  const instructors = [
-    { id: 1, name: "Dr. Smith", email: "smith@example.com" },
-  ];
+ 
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
@@ -198,8 +208,8 @@ const CourseManageDetails = () => {
                       <PersonIcon />
                     </Avatar>
                     <ListItemText
-                      primary={student.name}
-                      secondary={student.email}
+                      primary={student.student.fullName}
+                      secondary={student.student.email}
                       primaryTypographyProps={{ fontWeight: "medium" }}
                       secondaryTypographyProps={{ color: "text.secondary" }}
                     />
@@ -218,19 +228,17 @@ const CourseManageDetails = () => {
                 Instructors
               </Typography>
               <List>
-                {instructors.map((instructor) => (
-                  <ListItem key={instructor.id} sx={{ py: 1 }}>
+                {    <ListItem key={course.teacherId} sx={{ py: 1 }}>
                     <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
                       <PersonIcon />
                     </Avatar>
                     <ListItemText
-                      primary={instructor.name}
-                      secondary={instructor.email}
+                      primary={course.teacherName}
+                      secondary={`----------`}
                       primaryTypographyProps={{ fontWeight: "medium" }}
                       secondaryTypographyProps={{ color: "text.secondary" }}
                     />
-                  </ListItem>
-                ))}
+                  </ListItem>}
               </List>
             </CardContent>
           </Card>

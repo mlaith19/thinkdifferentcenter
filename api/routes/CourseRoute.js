@@ -20,7 +20,8 @@ router.post(
     body("registrationEndDate")
       .isDate()
       .withMessage("Invalid registration end date."),
-    body("instituteId").isInt().withMessage("Institute ID must be a valid integer."),
+    body("instituteId").isInt().withMessage("Institute ID must be a valid integer."),  body("teacherId").isInt().withMessage("Teacher ID must be a valid integer."),
+    body("teacherName").notEmpty().withMessage("Teacher name is required."),
     body("branchId").isInt().withMessage("Branch ID must be a valid integer."),
     body("numberOfSessions")
       .optional()
@@ -115,5 +116,19 @@ router.delete(
   [param("courseId").isInt().withMessage("Course ID must be a valid integer.")],
   CourseController.deleteCourse
 );
+
+// Join a course
+router.post("/join", CourseController.joinCourse);
+
+// Get all participating students for a course
+router.get("/:courseId/students", CourseController.getStudentsByCourse);
+
+// // Get all courses for a student
+// router.get("/student/:studentId/courses", CourseController.getCoursesByStudent);
+
+// Update enrollment status
+router.put("/enrollment/:enrollmentId", CourseController.updateEnrollmentStatus);
+
+router.get("/institute/:instituteId/enrollments", CourseController.getEnrollmentsByInstitute);
 
 module.exports = router;
