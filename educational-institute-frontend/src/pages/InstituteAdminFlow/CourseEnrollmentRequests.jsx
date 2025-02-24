@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import api from "../../services/api";import { decodeToken } from "../../utils/decodeToken";
+import api from "../../services/api";
+import { decodeToken } from "../../utils/decodeToken";
 import {
   Box,
   Typography,
@@ -15,12 +16,16 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
-import { Check as CheckIcon, Close as CloseIcon } from "@mui/icons-material";
 
 const CourseEnrollmentRequests = () => {
   const location = useLocation();
- const token = localStorage.getItem("token"); const user = decodeToken(token);
+  const token = localStorage.getItem("token");
+  const user = decodeToken(token);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
@@ -45,13 +50,13 @@ const CourseEnrollmentRequests = () => {
 
   const updateEnrollmentStatus = async (enrollmentId, newStatus) => {
     try {
-      await api.put(`/enrollment/${enrollmentId}`, { status: newStatus });
+      await api.put(`/courses/enrollment/${enrollmentId}`, { status: newStatus });
       setEnrollments((prev) =>
         prev.map((enrollment) =>
           enrollment.enrollmentId === enrollmentId ? { ...enrollment, status: newStatus } : enrollment
         )
       );
-      setSnackbar({ open: true, message: `Enrollment ${newStatus} successfully!`, severity: "success" });
+      setSnackbar({ open: true, message: `Enrollment status updated to ${newStatus} successfully!`, severity: "success" });
     } catch (error) {
       console.error("Error updating status:", error);
       setSnackbar({ open: true, message: "Failed to update status.", severity: "error" });
@@ -75,7 +80,7 @@ const CourseEnrollmentRequests = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>Student Name</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Course</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Update Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -85,24 +90,19 @@ const CourseEnrollmentRequests = () => {
                     <TableCell>{enrollment.courseName}</TableCell>
                     <TableCell>{enrollment.status}</TableCell>
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        startIcon={<CheckIcon />}
-                        onClick={() => updateEnrollmentStatus(enrollment.enrollmentId, "Approved")}
-                        sx={{ mr: 1 }}
-                        disabled={enrollment.status === "Approved"}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        startIcon={<CloseIcon />}
-                        onClick={() => updateEnrollmentStatus(enrollment.enrollmentId, "Rejected")}
-                        disabled={enrollment.status === "Rejected"}
-                      >
-                        Reject
-                      </Button>
+                      <FormControl fullWidth>
+                        <InputLabel>Status</InputLabel>
+                        <Select
+                          value={enrollment.status}
+                          onChange={(e) => updateEnrollmentStatus(enrollment.enrollmentId, e.target.value)}
+                          label="Status"
+                        >
+                          <MenuItem value="active">Active</MenuItem>
+                          <MenuItem value="inactive">Inactive</MenuItem>
+                          <MenuItem value="completed">Completed</MenuItem>
+                          <MenuItem value="dropped">Dropped</MenuItem>
+                        </Select>
+                      </FormControl>
                     </TableCell>
                   </TableRow>
                 ))}

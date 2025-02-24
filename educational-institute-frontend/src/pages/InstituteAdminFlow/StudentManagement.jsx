@@ -22,9 +22,9 @@ import {
   CircularProgress,
   Chip,
   Switch,
+  Fab,
 } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Search as SearchIcon } from "@mui/icons-material";
-import FloatingActionButton from "../../components/FloatingActionButton";
 import api from "../../services/api";
 import { decodeToken } from "../../utils/decodeToken";
 
@@ -32,101 +32,80 @@ const StudentManagement = () => {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [openDialog, setOpenDialog] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [newStudent, setNewStudent] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    birthDate: "",
-    branchId: "",
-  });
+  const [newStudentDialogOpen, setNewStudentDialogOpen] = useState(false);
+  const [newStudent, setNewStudent] = useState({ fullName: "", email: "", phone: "", birthDate: "" ,  password: "",});
+  const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [loading, setLoading] = useState(true);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState(null);
+  const [actionStudentId, setActionStudentId] = useState(null);
 
   const token = localStorage.getItem("token");
   const user = decodeToken(token);
 
+  // Fetch students on component mount
   useEffect(() => {
     if (user && user.instituteId) {
       fetchStudents();
     }
   }, [user]);
 
+  // Fetch students from the API
   const fetchStudents = async () => {
+    setLoading(true);
     try {
       const response = await api.get(`/student/institute/${user.instituteId}/students`);
       setStudents(response.data.data);
     } catch (error) {
       console.error("Error fetching students:", error);
+      setSnackbarMessage("Failed to fetch students.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle search input
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
 
-  const handleClickOpen = (student = null) => {
-    if (student) {
-      setSelectedStudent(student);
-      setNewStudent(student);
-    } else {
-      setSelectedStudent(null);
-      setNewStudent({
-        fullName: "",
-        email: "",
-        phone: "",
-        birthDate: "",
-        branchId: "",
-      });
-    }
-    setOpenDialog(true);
+  // Open edit dialog for a student
+  const handleEditClick = (student) => {
+    setSelectedStudent(student);
+    setEditDialogOpen(true);
   };
 
-  const handleClose = () => {
-    setOpenDialog(false);
-    setSelectedStudent(null);
-    setNewStudent({
-      fullName: "",
-      email: "",
-      phone: "",
-      birthDate: "",
-      branchId: "",
-    });
-  };
-
-  const handleSave = async () => {
+  // Save edited student details
+  const handleEditSave = async () => {
     try {
-      if (selectedStudent) {
-        await api.put(`/students/${selectedStudent.id}`, newStudent);
-        setSnackbarMessage("Student updated successfully.");
-      } else {
-        await api.post(`/institute/${user.instituteId}/students`, newStudent);
-        setSnackbarMessage("Student added successfully.");
-      }
+      await api.put(`/users/${selectedStudent.id}`, selectedStudent);
+      fetchStudents();
+      setEditDialogOpen(false);
+      setSnackbarMessage("Student updated successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchStudents();
-      handleClose();
     } catch (error) {
-      setSnackbarMessage("Failed to save student.");
+      setSnackbarMessage("Failed to update student.");
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      console.error("Error saving student:", error);
+      console.error("Error updating student:", error);
     }
   };
 
-  const handleDeleteStudent = async (id) => {
+  // Delete a student
+  const handleDeleteStudent = async (studentId) => {
     try {
-      await api.delete(`/students/${id}`);
+      await api.delete(`/users/delete/${studentId}`);
+      fetchStudents();
       setSnackbarMessage("Student deleted successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchStudents();
     } catch (error) {
       setSnackbarMessage("Failed to delete student.");
       setSnackbarSeverity("error");
@@ -135,12 +114,11 @@ const StudentManagement = () => {
     }
   };
 
-  const handleToggleStatus = async (id, isActive) => {
+  // Toggle student status
+  const handleToggleStatus = async (student) => {
     try {
-      await api.put(`/students/${id}`, { isActive: !isActive });
-      setSnackbarMessage("Student status updated successfully.");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
+      const updatedStudent = { ...student, isActive: !student.isActive };
+      await api.put(`/users/${student.id}`, updatedStudent);
       fetchStudents();
     } catch (error) {
       setSnackbarMessage("Failed to update student status.");
@@ -150,16 +128,58 @@ const StudentManagement = () => {
     }
   };
 
-  const handleRowClick = (studentId) => {
-    navigate(`/students/${studentId}`);
+  // Open new student dialog
+  const handleNewStudentClick = () => {
+    setNewStudentDialogOpen(true);
   };
 
+  // Save new student
+  const handleNewStudentSave = async () => {
+    try {  const emailParts = newStudent.email.split(/[.@]/);
+      const generatedUsername = emailParts[0];
+      await api.post("/users/create", { ...newStudent, instituteId: user.instituteId , 
+        username: generatedUsername,
+        role: "student",
+        branchId: newStudent.branchId,});
+      fetchStudents();
+      setNewStudentDialogOpen(false);
+      setNewStudent({ fullName: "", email: "", phone: "", birthDate: "", password: ""  });
+      setSnackbarMessage("Student created successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Failed to create student.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+      console.error("Error creating student:", error);
+    }
+  };
+
+  // Filter students based on search query
   const filteredStudents = students.filter((student) =>
     student.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Close snackbar
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
+  };
+
+  // Open confirmation dialog
+  const handleConfirmAction = (type, studentId) => {
+    setActionType(type);
+    setActionStudentId(studentId);
+    setConfirmDialogOpen(true);
+  };
+
+  // Handle confirmed action
+  const handleConfirmedAction = async () => {
+    setConfirmDialogOpen(false);
+    if (actionType === "delete") {
+      await handleDeleteStudent(actionStudentId);
+    } else if (actionType === "edit") {
+      setEditDialogOpen(true);
+    }
   };
 
   return (
@@ -167,6 +187,7 @@ const StudentManagement = () => {
       <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
         Student Management
       </Typography>
+
       {/* Search Field */}
       <Box sx={{ mb: 4, display: "flex", alignItems: "center" }}>
         <TextField
@@ -180,6 +201,7 @@ const StudentManagement = () => {
           }}
         />
       </Box>
+
       {/* Students Table */}
       <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
         <Table>
@@ -195,7 +217,7 @@ const StudentManagement = () => {
           </TableHead>
           <TableBody>
             {filteredStudents.map((student) => (
-              <TableRow key={student.id} hover onClick={() => handleRowClick(student.id)} sx={{ cursor: "pointer" }}>
+              <TableRow key={student.id}>
                 <TableCell>{student.fullName}</TableCell>
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.phone}</TableCell>
@@ -204,30 +226,15 @@ const StudentManagement = () => {
                   <Chip label={student.isActive ? "Active" : "Inactive"} color={student.isActive ? "success" : "error"} />
                 </TableCell>
                 <TableCell>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClickOpen(student);
-                    }}
-                    color="primary"
-                  >
+                  <IconButton onClick={() => handleEditClick(student)} color="primary">
                     <EditIcon />
                   </IconButton>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteStudent(student.id);
-                    }}
-                    color="error"
-                  >
+                  <IconButton onClick={() => handleConfirmAction("delete", student.id)} color="error">
                     <DeleteIcon />
                   </IconButton>
                   <Switch
                     checked={student.isActive}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      handleToggleStatus(student.id, student.isActive);
-                    }}
+                    onChange={() => handleToggleStatus(student)}
                     color="primary"
                   />
                 </TableCell>
@@ -236,60 +243,126 @@ const StudentManagement = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      {/* Floating Action Button for Adding Student */}
-      <FloatingActionButton
-        key={"addStudent"}
-        onClick={() => handleClickOpen()}
-        icon={<AddIcon />}
-        label="Add Student"
-      />
-      {/* Add/Edit Student Dialog */}
-      <Dialog open={openDialog} onClose={handleClose}>
-        <DialogTitle>{selectedStudent ? "Edit Student" : "Add New Student"}</DialogTitle>
+
+      {/* Edit Student Dialog */}
+      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+        <DialogTitle>Edit Student</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
-            margin="dense"
-            label="Name"
             fullWidth
+            label="Full Name"
+            value={selectedStudent?.fullName || ""}
+            onChange={(e) => setSelectedStudent({ ...selectedStudent, fullName: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            value={selectedStudent?.email || ""}
+            onChange={(e) => setSelectedStudent({ ...selectedStudent, email: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Phone"
+            value={selectedStudent?.phone || ""}
+            onChange={(e) => setSelectedStudent({ ...selectedStudent, phone: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Birth Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={selectedStudent?.birthDate || ""}
+            onChange={(e) => setSelectedStudent({ ...selectedStudent, birthDate: e.target.value })}
+          /> 
+        
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} color="primary">Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* New Student Dialog */}
+      <Dialog open={newStudentDialogOpen} onClose={() => setNewStudentDialogOpen(false)}>
+        <DialogTitle>Create New Student</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Full Name"
             value={newStudent.fullName}
             onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
+            sx={{ mb: 2 }}
           />
           <TextField
-            margin="dense"
-            label="Email"
             fullWidth
+            label="Email"
             value={newStudent.email}
             onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
+            sx={{ mb: 2 }}
           />
           <TextField
-            margin="dense"
-            label="Phone"
             fullWidth
+            label="Phone"
             value={newStudent.phone}
             onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })}
+            sx={{ mb: 2 }}
           />
           <TextField
-            margin="dense"
-            label="Birth Date"
             fullWidth
+            label="Birth Date"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={newStudent.birthDate}
             onChange={(e) => setNewStudent({ ...newStudent, birthDate: e.target.value })}
           />
+              {/* Password Field */}
+              <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            value={newStudent.password}      
+            onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
+            sx={{ mb: 2 ,mt: 2 }}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} color="primary">
-            Save
-          </Button>
+          <Button onClick={() => setNewStudentDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleNewStudentSave} color="primary">Create</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to {actionType} this student?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleConfirmedAction} color="primary">Confirm</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Floating Action Button for Adding Student */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        sx={{ position: "fixed", bottom: 16, right: 16 }}
+        onClick={handleNewStudentClick}
+      >
+        <AddIcon />
+      </Fab>
+
       {/* Snackbar for Notifications */}
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
         <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: "100%" }}>
           {snackbarMessage}
         </Alert>

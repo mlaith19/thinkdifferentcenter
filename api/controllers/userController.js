@@ -15,7 +15,7 @@ const generateToken = (user) => {
 
 // إنشاء حساب جديد
 const createUser = async (req, res) => {
-  const { username, email, password, fullName, role, instituteId, branchId } = req.body; // Include branchId
+  const { username, email, password, fullName, role, instituteId, branchId, birthDate, phone } = req.body; // Include birthDate and phone
   const creator = req.user;
 
   try {
@@ -40,6 +40,8 @@ const createUser = async (req, res) => {
       role,
       instituteId: creator.role === "institute_admin" ? creator.instituteId : instituteId,
       branchId: creator.role === "institute_admin" ? creator.branchId : branchId, // Assign branchId
+      birthDate, // Include birthDate
+      phone, // Include phone
     });
 
     res.status(201).json({
@@ -49,7 +51,7 @@ const createUser = async (req, res) => {
         username: newUser.username,
         email: newUser.email,
         fullName: newUser.fullName,
-        role: newUser.role,
+        role: newUser.role,  birthDate: newUser.birthDate,
       },
     });
   } catch (error) {
@@ -236,16 +238,16 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const { userId } = req.params;
   const requester = req.user;
-
+ 
   try {
     const userToDelete = await User.findByPk(userId);
     if (!userToDelete) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    if (requester.role !== "super_admin") {
-      return res.status(403).json({ message: "Unauthorized action" });
+    if (requester.role !== "super_admin" && requester.role !== "institute_admin") {
+      return res.status(403).json({ message: "Unauthorized action2" });
     }
+
 
     await userToDelete.destroy();
     res.status(200).json({ message: "User deleted successfully" });
