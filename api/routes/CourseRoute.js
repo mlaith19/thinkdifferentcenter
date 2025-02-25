@@ -84,6 +84,7 @@ router.get(
 );
 
 // Update a course
+ 
 router.put(
   "/:courseId",
   authenticate,
@@ -104,6 +105,41 @@ router.put(
       .withMessage("Invalid registration end date."),
     body("minAge").optional().isInt().withMessage("Minimum age must be a valid integer."),
     body("maxAge").optional().isInt().withMessage("Maximum age must be a valid integer."),
+    body("numberOfSessions")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("Number of sessions must be a valid integer."),
+    body("scheduleDays")
+      .optional()
+      .isArray()
+      .withMessage("Schedule days must be an array.")
+      .custom((value) => {
+        const validDays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+        return value.every((day) => validDays.includes(day));
+      })
+      .withMessage("Invalid day in scheduleDays. Must be one of: mon, tue, wed, thu, fri, sat, sun."),
+    body("autoGenerateSchedule")
+      .optional()
+      .isBoolean()
+      .withMessage("Auto-generate schedule must be a boolean."),
+    body("status")
+      .optional()
+      .isIn(["active", "inactive"])
+      .withMessage("Invalid status."),
+    body("sessionDates")
+      .optional()
+      .isArray()
+      .withMessage("Session dates must be an array.")
+      .custom((value) => {
+        return value.every((session) => {
+          return (
+            typeof session === "object" &&
+            session.date &&
+            session.title &&
+            !isNaN(new Date(session.date).getTime())
+      )});
+      })
+      .withMessage("Each session must be an object with 'date' and 'title' fields."),
   ],
   CourseController.updateCourse
 );

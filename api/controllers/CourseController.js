@@ -141,6 +141,7 @@ const getCourseById = async (req, res) => {
 };
 
 // Update a course
+ 
 const updateCourse = async (req, res) => {
   const { courseId } = req.params;
   const updates = req.body;
@@ -155,6 +156,32 @@ const updateCourse = async (req, res) => {
       });
     }
 
+    // Validate sessionDates (if provided)
+    if (updates.sessionDates && Array.isArray(updates.sessionDates)) {
+      const startDate = new Date(course.registrationStartDate);
+      const endDate = new Date(course.registrationEndDate);
+
+      for (const session of updates.sessionDates) {
+        const sessionDate = new Date(session.date);
+        if (sessionDate < startDate || sessionDate > endDate) {
+          return res.status(400).json({
+            succeed: false,
+            message: "Session dates must be between registration start and end dates.",
+            data: null,
+            errorDetails: null,
+          });
+        }
+      }
+    }
+
+    // Convert scheduleDays and sessionDates to JSON strings if they are provided
+    if (updates.scheduleDays) {
+      updates.scheduleDays = JSON.stringify(updates.scheduleDays);
+    }
+    if (updates.sessionDates) {
+      updates.sessionDates = JSON.stringify(updates.sessionDates);
+    }
+
     await course.update(updates);
 
     res.status(200).json({
@@ -167,7 +194,6 @@ const updateCourse = async (req, res) => {
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };
-
 // Delete a course
 const deleteCourse = async (req, res) => {
   const { courseId } = req.params;
