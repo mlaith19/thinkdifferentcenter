@@ -16,22 +16,40 @@ import {
   TableHead,
   TableRow,
   IconButton,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import api from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 const PointsManagement = () => {
   const [points, setPoints] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [rewards, setRewards] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [currentPoint, setCurrentPoint] = useState({
     id: "",
     studentId: "",
+    courseId: "",
     points: "",
-    reward: "",
+    rewardId: "",
   });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPoints();
+    fetchStudents();
+    fetchCourses();
+    fetchRewards();
   }, []);
 
   const fetchPoints = async () => {
@@ -43,8 +61,35 @@ const PointsManagement = () => {
     }
   };
 
+  const fetchStudents = async () => {
+    try {
+      const response = await api.get("/students");
+      setStudents(response.data);
+    } catch (error) {
+      console.error("Failed to fetch students:", error);
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const response = await api.get("/courses");
+      setCourses(response.data);
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+    }
+  };
+
+  const fetchRewards = async () => {
+    try {
+      const response = await api.get("/rewards");
+      setRewards(response.data);
+    } catch (error) {
+      console.error("Failed to fetch rewards:", error);
+    }
+  };
+
   const handleOpenDialog = (point = null) => {
-    setCurrentPoint(point || { id: "", studentId: "", points: "", reward: "" });
+    setCurrentPoint(point || { id: "", studentId: "", courseId: "", points: "", rewardId: "" });
     setOpenDialog(true);
   };
 
@@ -61,8 +106,14 @@ const PointsManagement = () => {
       }
       fetchPoints();
       handleCloseDialog();
+      setSnackbarMessage("Point saved successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Failed to save point:", error);
+      setSnackbarMessage("Failed to save point.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -70,8 +121,14 @@ const PointsManagement = () => {
     try {
       await api.delete(`/points/${id}`);
       fetchPoints();
+      setSnackbarMessage("Point deleted successfully.");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Failed to delete point:", error);
+      setSnackbarMessage("Failed to delete point.");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
     }
   };
 
@@ -89,7 +146,8 @@ const PointsManagement = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Student ID</TableCell>
+              <TableCell>Student</TableCell>
+              <TableCell>Course</TableCell>
               <TableCell>Points</TableCell>
               <TableCell>Reward</TableCell>
               <TableCell>Actions</TableCell>
@@ -98,9 +156,10 @@ const PointsManagement = () => {
           <TableBody>
             {points.map((point) => (
               <TableRow key={point.id}>
-                <TableCell>{point.studentId}</TableCell>
+                <TableCell>{students.find((s) => s.id === point.studentId)?.fullName}</TableCell>
+                <TableCell>{courses.find((c) => c.id === point.courseId)?.name}</TableCell>
                 <TableCell>{point.points}</TableCell>
-                <TableCell>{point.reward}</TableCell>
+                <TableCell>{rewards.find((r) => r.id === point.rewardId)?.name}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleOpenDialog(point)} color="primary">
                     <EditIcon />
@@ -118,13 +177,32 @@ const PointsManagement = () => {
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{currentPoint.id ? "Edit Points" : "Add Points"}</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Student ID"
-            value={currentPoint.studentId}
-            onChange={(e) => setCurrentPoint({ ...currentPoint, studentId: e.target.value })}
-            sx={{ mb: 2 }}
-          />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Student</InputLabel>
+            <Select
+              value={currentPoint.studentId}
+              onChange={(e) => setCurrentPoint({ ...currentPoint, studentId: e.target.value })}
+            >
+              {students.map((student) => (
+                <MenuItem key={student.id} value={student.id}>
+                  {student.fullName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Course</InputLabel>
+            <Select
+              value={currentPoint.courseId}
+              onChange={(e) => setCurrentPoint({ ...currentPoint, courseId: e.target.value })}
+            >
+              {courses.map((course) => (
+                <MenuItem key={course.id} value={course.id}>
+                  {course.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             fullWidth
             label="Points"
@@ -132,12 +210,19 @@ const PointsManagement = () => {
             onChange={(e) => setCurrentPoint({ ...currentPoint, points: e.target.value })}
             sx={{ mb: 2 }}
           />
-          <TextField
-            fullWidth
-            label="Reward"
-            value={currentPoint.reward}
-            onChange={(e) => setCurrentPoint({ ...currentPoint, reward: e.target.value })}
-          />
+          <FormControl fullWidth>
+            <InputLabel>Reward</InputLabel>
+            <Select
+              value={currentPoint.rewardId}
+              onChange={(e) => setCurrentPoint({ ...currentPoint, rewardId: e.target.value })}
+            >
+              {rewards.map((reward) => (
+                <MenuItem key={reward.id} value={reward.id}>
+                  {reward.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
@@ -148,6 +233,16 @@ const PointsManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

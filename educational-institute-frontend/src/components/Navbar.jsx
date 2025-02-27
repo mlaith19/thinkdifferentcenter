@@ -55,19 +55,19 @@ const Navbar = () => {
         <Button key="courses" color="inherit" component={Link} to="/courses">
           Courses
         </Button>,
-        <Button key="reports" color="inherit" component={Link} to="/institute-reports">
+        <Button key="reports" color="inherit" component={Link} to="/reports-management">
           Reports
         </Button>,
         <Button key="payments" color="inherit" component={Link} to="/payments">
           Payments
         </Button>,
-        <Button key="attendances" color="inherit" component={Link} to="/attendances">
+        <Button key="attendances" color="inherit" component={Link} to="/attendance-management">
           Attendances
         </Button>,
         <Button key="expenses" color="inherit" component={Link} to="/expenses">
           Expenses
         </Button>,
-        <Button key="points" color="inherit" component={Link} to="/points">
+        <Button key="points" color="inherit" component={Link} to="/points-management">
           Points
         </Button>,
         <Button key="notifications" color="inherit" component={Link} to="/notifications">
