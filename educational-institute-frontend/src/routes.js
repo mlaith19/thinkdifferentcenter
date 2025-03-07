@@ -2,6 +2,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/AuthFlow/Login";
+import ForgotPassword from "./pages/AuthFlow/ForgotPassword";
+import ResetPassword from "./pages/AuthFlow/ResetPassword";
 import UserManagement from "./pages/SuperAdminFlow/UserManagement";
 import InstituteManagement from "./pages/SuperAdminFlow/InstituteManagement";
 import CourseManagement from "./pages/InstituteAdminFlow/CourseManagement";
@@ -59,6 +61,8 @@ export const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route
         path="/users"
         element={

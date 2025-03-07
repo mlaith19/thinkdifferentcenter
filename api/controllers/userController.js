@@ -3,7 +3,7 @@ const Role = require("../models/role");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { handleError } = require("../utils/errorHandler");
-
+const { sendEmail } = require("../utils/mailer");
 // توليد التوكن
 const generateToken = (user) => {
   return jwt.sign(
@@ -257,6 +257,66 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Check if the user exists
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Generate a password reset token
+    const resetToken = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "1h", // Token expires in 1 hour
+    });
+
+    // Create the reset link
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+
+    // Send the reset link via email
+    await sendEmail(
+      user.email,
+      "Password Reset Request",
+      `Click the following link to reset your password: ${resetLink}`
+    );
+
+    res.status(200).json({ message: "Password reset link sent to your email." });
+  } catch (error) {
+    console.error("Error in forgot password:", error);
+    res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+// Reset Password Controller
+const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully." });
+  } catch (error) {
+    console.error("Error in reset password:", error);
+    res.status(400).json({ message: "Invalid or expired token." });
+  }
+};
+
 
 module.exports = {
   createUser,
@@ -265,5 +325,7 @@ module.exports = {
   deleteUser,
   getAllUsers,
   getUsersByInstituteId,
-  getUsersByBranchId, updateUser
+  getUsersByBranchId, updateUser,
+  forgotPassword,
+  resetPassword
 };

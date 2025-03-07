@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Import Link
 import { useAuth } from "../../context/AuthContext";
 import {
   Box,
@@ -129,6 +129,19 @@ const Login = () => {
           >
             Login
           </Button>
+
+          {/* Forgot Password Link */}
+          <Typography
+            variant="body2"
+            sx={{ mt: 2, textAlign: "center", color: "primary.main" }}
+          >
+            <Link
+              to="/forgot-password"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Forgot Password?
+            </Link>
+          </Typography>
         </Box>
       </Paper>
     </Container>

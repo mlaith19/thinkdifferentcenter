@@ -78,4 +78,26 @@ router.get(
   ],
   userController.getUsersByBranchId
 );
+// Forgot Password Route
+router.post(
+  "/forgot-password",
+  [
+    body("email").isEmail().withMessage("Valid email is required."), // Validate email
+  ],
+  userController.forgotPassword
+);
+
+// Reset Password Route
+router.post(
+  "/reset-password",
+  [
+    body("token").notEmpty().withMessage("Token is required."), // Validate token
+    body("newPassword")
+      .isLength({ min: 8 })
+      .withMessage("Password must be at least 8 characters."), // Validate new password
+  ],
+  userController.resetPassword
+);
+
+
 module.exports = router;
