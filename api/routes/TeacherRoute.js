@@ -16,4 +16,4 @@ router.get("/teaching-hours", authenticate, TeacherController.calculateTeachingH
 // إضافة نقاط للطلاب
 router.post("/points", authenticate, TeacherController.addPoints);
 
-module.exports = router;
+module.exports = router;    

@@ -344,6 +344,12 @@ export const AppRoutes = () => {
         }
       />
       <Route
+        path="/teacher-management" element={
+          <ProtectedRoute allowedRoles={["teacher"]}>
+            <TeacherManagement />
+          </ProtectedRoute> 
+        } />
+      <Route
         path="/student-progress"
         element={
           <ProtectedRoute allowedRoles={["teacher"]}>

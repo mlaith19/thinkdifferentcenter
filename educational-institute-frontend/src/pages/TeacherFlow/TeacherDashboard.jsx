@@ -1,41 +1,70 @@
 import React, { useState, useEffect } from "react";
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, CircularProgress } from "@mui/material";
 import api from "../../services/api";
+import Navbar from "../../components/Navbar";
 
-const TeacherManagement = () => {
+const TeacherManagement = ({ teacherId }) => {
   const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchSessions();
-  }, []);
+    const fetchSessions = async () => {
+      try {
+        const response = await api.get(`/teacher/${teacherId}/sessions`);
+        setSessions(response.data);
+      } catch (error) {
+        setError("Failed to fetch sessions.");
+        console.error("Error fetching sessions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchSessions = async () => {
-    try {
-      const response = await api.get("/teacher/sessions");
-      setSessions(response.data);
-    } catch (error) {
-      setError("Failed to fetch sessions.");
-      console.error("Error fetching sessions:", error);
-    }
-  };
+    fetchSessions();
+  }, [teacherId]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-2xl font-bold mb-6">Teacher Management</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-bold mb-4">Sessions</h2>
-        <ul>
-          {sessions.map((session) => (
-            <li key={session.id} className="mb-2">
-              <span>
-                {session.courseName} - {session.date} ({session.startTime} - {session.endTime})
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default",  }}>
+      <Navbar />
+      <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
+        <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main", textAlign: "center" }}>
+          Teacher Management
+        </Typography>
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Typography color="error" align="center">{error}</Typography>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "primary.light" }}>
+                    <TableCell sx={{ fontWeight: "bold" }}>Course Name</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Start Time</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>End Time</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {sessions.map((session) => (
+                    <TableRow key={session.id} hover>
+                      <TableCell>{session.courseName}</TableCell>
+                      <TableCell>{session.date}</TableCell>
+                      <TableCell>{session.startTime}</TableCell>
+                      <TableCell>{session.endTime}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 

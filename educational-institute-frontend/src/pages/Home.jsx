@@ -33,7 +33,7 @@ const Home = () => {
             navigate("/students");
             break;
           case "teacher":
-            navigate("/sessions");
+            navigate("/teacher-management");
             break;
           case "student":
             navigate("/students");

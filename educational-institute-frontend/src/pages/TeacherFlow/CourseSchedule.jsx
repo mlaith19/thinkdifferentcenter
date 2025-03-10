@@ -1,23 +1,27 @@
-import React from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import api from "../../services/api";
 
-const CourseSchedule = () => {
-  // Dummy data for course schedule
-  const courses = [
-    { id: 1, name: "Mathematics", date: "2023-10-01", time: "10:00 AM" },
-    { id: 2, name: "Physics", date: "2023-10-02", time: "11:00 AM" },
-    { id: 3, name: "Chemistry", date: "2023-10-03", time: "12:00 PM" },
-  ];
+const CourseSchedule = ({ teacherId }) => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await api.get(`/teacher/${teacherId}/sessions`);
+        setCourses(response.data);
+      } catch (error) {
+        setError("Failed to fetch courses.");
+        console.error("Error fetching courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [teacherId]);
 
   return (
     <Box sx={{ p: 4 }}>
@@ -39,7 +43,7 @@ const CourseSchedule = () => {
                 <TableRow key={course.id}>
                   <TableCell>{course.name}</TableCell>
                   <TableCell>{course.date}</TableCell>
-                  <TableCell>{course.time}</TableCell>
+                  <TableCell>{course.startTime} - {course.endTime}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
