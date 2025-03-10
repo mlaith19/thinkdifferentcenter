@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
             navigateCallback("/students"); // لو سكرتير، اوديه على إدارة الطلاب
             break;
           case "teacher":
-            navigateCallback("/sessions"); // لو مدرس، اوديه على إدارة الحصص
+            navigateCallback("/teacher-management"); // لو مدرس، اوديه على إدارة الحصص
             break;
           case "student":
             navigateCallback("/students"); // لو طالب، اوديه على صفحة الطالب

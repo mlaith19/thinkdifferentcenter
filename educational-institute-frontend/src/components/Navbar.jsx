@@ -99,20 +99,7 @@ const Navbar = () => {
         </Button>
       );
     } else if (role === "teacher") {
-      buttons.push(
-        <Button key="sessions" color="inherit" component={Link} to="/sessions">
-          Sessions
-        </Button>,
-        <Button key="my-courses" color="inherit" component={Link} to="/my-courses">
-          My Courses
-        </Button>,
-        <Button key="student-progress" color="inherit" component={Link} to="/student-progress">
-          Student Progress
-        </Button>,
-        <Button key="materials-upload" color="inherit" component={Link} to="/materials-upload">
-          Materials Upload
-        </Button>
-      );
+    
     } else if (role === "student") {
       buttons.push(
         <Button key="students" color="inherit" component={Link} to="/students">

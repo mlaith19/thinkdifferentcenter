@@ -3,7 +3,7 @@ const Attendance = require("../models/Attendance");
 const Points = require("../models/Points");
 const { handleError } = require("../utils/errorHandler");
 
-// عرض الحصص المكلف بها المدرس
+ 
 const getTeacherSessions = async (req, res) => {
   const { userId } = req.user; // يتم استخراج userId من التوكن
 
@@ -20,7 +20,7 @@ const getTeacherSessions = async (req, res) => {
   }
 };
 
-// إضافة الحضور والغياب للطلاب
+ 
 const markAttendance = async (req, res) => {
   const { sessionId, studentId, status } = req.body;
 
