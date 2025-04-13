@@ -5,7 +5,6 @@ const { authenticate } = require("../middlewares/auth_JWT");
 
 const router = express.Router();
 
- 
 router.post(
   "/create",
   authenticate,
@@ -14,16 +13,21 @@ router.post(
     body("startTime").notEmpty().withMessage("Start time is required."),
     body("endTime").notEmpty().withMessage("End time is required."),
     body("courseId").isInt().withMessage("Course ID must be a valid integer."),
-    body("teacherId").isInt().withMessage("Teacher ID must be a valid integer."),
+    body("teacherId")
+      .isInt()
+      .withMessage("Teacher ID must be a valid integer."),
   ],
   SessionController.createSession
 );
 
- 
 router.get(
   "/teacher/:teacherId",
   authenticate,
-  [param("teacherId").isInt().withMessage("Teacher ID must be a valid integer.")],
+  [
+    param("teacherId")
+      .isInt()
+      .withMessage("Teacher ID must be a valid integer."),
+  ],
   SessionController.getSessionsByTeacher
 );
 

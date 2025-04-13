@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Box, Typography, TextField, Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import api from "../../services/api";
 import Navbar from "../../components/Navbar";
 
 const SessionManagement = ({ teacherId }) => {
   const [sessions, setSessions] = useState([]);
-  const [newSession, setNewSession] = useState({ date: "", startTime: "", endTime: "", courseId: "" });
+  const [newSession, setNewSession] = useState({
+    date: "",
+    startTime: "",
+    endTime: "",
+    courseId: "",
+  });
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -39,29 +63,75 @@ const SessionManagement = ({ teacherId }) => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "background.default",  }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Navbar />
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+      >
         Session Management
       </Typography>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => setOpen(true)}
+      >
         Add Session
       </Button>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>Create New Session</DialogTitle>
         <DialogContent>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField fullWidth label="Date" type="date" InputLabelProps={{ shrink: true }} value={newSession.date} onChange={(e) => setNewSession({ ...newSession, date: e.target.value })} />
+              <TextField
+                fullWidth
+                label="Date"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={newSession.date}
+                onChange={(e) =>
+                  setNewSession({ ...newSession, date: e.target.value })
+                }
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="Start Time" type="time" InputLabelProps={{ shrink: true }} value={newSession.startTime} onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })} />
+              <TextField
+                fullWidth
+                label="Start Time"
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                value={newSession.startTime}
+                onChange={(e) =>
+                  setNewSession({ ...newSession, startTime: e.target.value })
+                }
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="End Time" type="time" InputLabelProps={{ shrink: true }} value={newSession.endTime} onChange={(e) => setNewSession({ ...newSession, endTime: e.target.value })} />
+              <TextField
+                fullWidth
+                label="End Time"
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                value={newSession.endTime}
+                onChange={(e) =>
+                  setNewSession({ ...newSession, endTime: e.target.value })
+                }
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth label="Course ID" value={newSession.courseId} onChange={(e) => setNewSession({ ...newSession, courseId: e.target.value })} />
+              <TextField
+                fullWidth
+                label="Course ID"
+                value={newSession.courseId}
+                onChange={(e) =>
+                  setNewSession({ ...newSession, courseId: e.target.value })
+                }
+              />
             </Grid>
           </Grid>
         </DialogContent>
@@ -96,7 +166,11 @@ const SessionManagement = ({ teacherId }) => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+      >
         <Alert onClose={() => setSnackbarOpen(false)} severity="success">
           Session created successfully!
         </Alert>

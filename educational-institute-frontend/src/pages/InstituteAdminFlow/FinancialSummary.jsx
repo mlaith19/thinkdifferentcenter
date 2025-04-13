@@ -20,7 +20,17 @@ import {
   BarChart as BarChartIcon,
   PieChart as PieChartIcon,
 } from "@mui/icons-material";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 const FinancialSummary = () => {
   const financialData = {
@@ -57,7 +67,10 @@ const FinancialSummary = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+      >
         Financial Summary
       </Typography>
 
@@ -67,12 +80,16 @@ const FinancialSummary = () => {
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
-                <AttachMoneyIcon sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+                <AttachMoneyIcon
+                  sx={{ fontSize: 40, color: "primary.main", mr: 2 }}
+                />
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                   Total Revenue
                 </Typography>
               </Box>
-              <Typography variant="h4">${financialData.totalRevenue}</Typography>
+              <Typography variant="h4">
+                ${financialData.totalRevenue}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -80,12 +97,16 @@ const FinancialSummary = () => {
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
-                <TrendingDownIcon sx={{ fontSize: 40, color: "error.main", mr: 2 }} />
+                <TrendingDownIcon
+                  sx={{ fontSize: 40, color: "error.main", mr: 2 }}
+                />
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                   Total Expenses
                 </Typography>
               </Box>
-              <Typography variant="h4">${financialData.totalExpenses}</Typography>
+              <Typography variant="h4">
+                ${financialData.totalExpenses}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -93,7 +114,9 @@ const FinancialSummary = () => {
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Box display="flex" alignItems="center" mb={2}>
-                <TrendingUpIcon sx={{ fontSize: 40, color: "success.main", mr: 2 }} />
+                <TrendingUpIcon
+                  sx={{ fontSize: 40, color: "success.main", mr: 2 }}
+                />
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                   Net Profit
                 </Typography>
@@ -137,7 +160,10 @@ const FinancialSummary = () => {
                 label
               >
                 {expenseData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />

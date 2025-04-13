@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Box, Typography, Paper, Button, List, ListItem, ListItemText } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+} from "@mui/material";
 import { Upload as UploadIcon } from "@mui/icons-material";
 
 const MaterialsUpload = () => {
@@ -12,7 +20,10 @@ const MaterialsUpload = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+      >
         Materials Upload
       </Typography>
 
@@ -23,12 +34,7 @@ const MaterialsUpload = () => {
           startIcon={<UploadIcon />}
         >
           Upload Materials
-          <input
-            type="file"
-            hidden
-            multiple
-            onChange={handleFileUpload}
-          />
+          <input type="file" hidden multiple onChange={handleFileUpload} />
         </Button>
 
         <List sx={{ mt: 2 }}>

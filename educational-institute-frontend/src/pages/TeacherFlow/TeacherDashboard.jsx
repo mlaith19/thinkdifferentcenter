@@ -51,18 +51,15 @@ const TeacherDashboard = () => {
   const teacherId = user?.userId;
   const instituteId = user?.instituteId;
 
-  // Fetch courses and sessions on component mount
   useEffect(() => {
     fetchCourses();
-    fetchSessions();
   }, [teacherId]);
 
-  // Fetch courses assigned to the teacher
   const fetchCourses = async () => {
     setLoading(true);
     try {
       const response = await api.get("/courses", { params: { instituteId } });
-      const filteredCourses = response.data.filter(
+      const filteredCourses = response.data.data.filter(
         (course) => course.teacherId === teacherId
       );
       setCourses(filteredCourses);
@@ -74,7 +71,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Fetch sessions for the teacher
   const fetchSessions = async () => {
     try {
       const response = await api.get(`/teacher/${teacherId}/sessions`);
@@ -85,7 +81,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Handle creating a new session
   const handleCreateSession = async (e) => {
     e.preventDefault();
     try {
@@ -95,14 +90,13 @@ const TeacherDashboard = () => {
       setSnackbarMessage("Session created successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      fetchSessions(); // Refresh sessions after creation
+      fetchSessions();
     } catch (error) {
       setError("Failed to create session.");
       console.error("Error creating session:", error);
     }
   };
 
-  // Handle toggling student attendance
   const handleToggleAttendance = (id) => {
     setStudents(
       students.map((student) =>
@@ -111,7 +105,6 @@ const TeacherDashboard = () => {
     );
   };
 
-  // Handle saving attendance
   const handleSaveAttendance = async (courseId) => {
     try {
       await api.post("/attendance", {
@@ -130,7 +123,6 @@ const TeacherDashboard = () => {
     }
   };
 
-  // Handle tab change
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -139,7 +131,10 @@ const TeacherDashboard = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Navbar />
       <Box sx={{ p: 3 }}>
-        <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+        <Typography
+          variant="h4"
+          sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+        >
           Teacher Dashboard
         </Typography>
         <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 4 }}>
@@ -149,7 +144,6 @@ const TeacherDashboard = () => {
           <Tab label="Session Management" />
         </Tabs>
 
-        {/* My Courses Tab */}
         {tabValue === 0 && (
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
@@ -159,7 +153,9 @@ const TeacherDashboard = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: "bold" }}>Course Name</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      Course Name
+                    </TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Students</TableCell>
                     <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                   </TableRow>
@@ -168,7 +164,7 @@ const TeacherDashboard = () => {
                   {courses.map((course) => (
                     <TableRow key={course.id}>
                       <TableCell>{course.name}</TableCell>
-                      <TableCell>{course.students}</TableCell>
+                      <TableCell>{course.studentCount}</TableCell>
                       <TableCell>{course.status}</TableCell>
                     </TableRow>
                   ))}
@@ -178,7 +174,6 @@ const TeacherDashboard = () => {
           </Paper>
         )}
 
-        {/* Course Schedule Tab */}
         {tabValue === 1 && (
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
@@ -209,7 +204,6 @@ const TeacherDashboard = () => {
           </Paper>
         )}
 
-        {/* Attendance Tracking Tab */}
         {tabValue === 2 && (
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
@@ -250,7 +244,6 @@ const TeacherDashboard = () => {
           </Paper>
         )}
 
-        {/* Session Management Tab */}
         {tabValue === 3 && (
           <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
@@ -292,7 +285,10 @@ const TeacherDashboard = () => {
                       InputLabelProps={{ shrink: true }}
                       value={newSession.startTime}
                       onChange={(e) =>
-                        setNewSession({ ...newSession, startTime: e.target.value })
+                        setNewSession({
+                          ...newSession,
+                          startTime: e.target.value,
+                        })
                       }
                     />
                   </Grid>
@@ -304,7 +300,10 @@ const TeacherDashboard = () => {
                       InputLabelProps={{ shrink: true }}
                       value={newSession.endTime}
                       onChange={(e) =>
-                        setNewSession({ ...newSession, endTime: e.target.value })
+                        setNewSession({
+                          ...newSession,
+                          endTime: e.target.value,
+                        })
                       }
                     />
                   </Grid>
@@ -314,14 +313,20 @@ const TeacherDashboard = () => {
                       label="Course ID"
                       value={newSession.courseId}
                       onChange={(e) =>
-                        setNewSession({ ...newSession, courseId: e.target.value })
+                        setNewSession({
+                          ...newSession,
+                          courseId: e.target.value,
+                        })
                       }
                     />
                   </Grid>
                 </Grid>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => setOpenSessionDialog(false)} color="primary">
+                <Button
+                  onClick={() => setOpenSessionDialog(false)}
+                  color="primary"
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleCreateSession} color="primary">
@@ -355,7 +360,6 @@ const TeacherDashboard = () => {
         )}
       </Box>
 
-      {/* Snackbar for Notifications */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

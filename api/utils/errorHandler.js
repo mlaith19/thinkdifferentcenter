@@ -1,5 +1,5 @@
 const handleError = (error) => {
-  let errorMessage = 'Something went wrong';
+  let errorMessage = "Something went wrong";
   let statusCode = 500;
   let errorDetails = {};
 
@@ -7,7 +7,7 @@ const handleError = (error) => {
   const errorHandlers = {
     SequelizeUniqueConstraintError: () => {
       statusCode = 400; // Bad request for unique constraint errors
-      errorMessage = 'Duplicate entry error';
+      errorMessage = "Duplicate entry error";
       errorDetails = {
         field: error.errors[0].path,
         value: error.errors[0].value,
@@ -16,25 +16,25 @@ const handleError = (error) => {
     },
     SequelizeValidationError: () => {
       statusCode = 400;
-      errorMessage = 'Validation error';
-      errorDetails = error.errors.map(err => ({
+      errorMessage = "Validation error";
+      errorDetails = error.errors.map((err) => ({
         field: err.path,
         message: err.message,
       }));
     },
     SequelizeDatabaseError: () => {
       statusCode = 500;
-      errorMessage = 'Database error';
+      errorMessage = "Database error";
       errorDetails = { message: error.message };
     },
     ValidationError: () => {
       statusCode = 400;
-      errorMessage = 'Validation error';
+      errorMessage = "Validation error";
       errorDetails = { message: error.message };
     },
     SyntaxError: () => {
       statusCode = 400;
-      errorMessage = 'Bad request syntax';
+      errorMessage = "Bad request syntax";
       errorDetails = { message: error.message };
     },
     default: () => {

@@ -36,17 +36,16 @@ const CourseManageDetails = () => {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- const [students, setStudents] = useState([]); // State for students
- const [studentsLoading, setStudentsLoading] = useState(true); // Loading state for students
+  const [students, setStudents] = useState([]); // State for students
+  const [studentsLoading, setStudentsLoading] = useState(true); // Loading state for students
 
   // Fetch course data on component mount
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-         const response = await api.get(`/courses/${courseId}`);
-     
+        const response = await api.get(`/courses/${courseId}`);
+
         setCourse(response.data.data);
-    
       } catch (err) {
         setError("Failed to fetch course details.");
         console.error("Error fetching course details:", err);
@@ -54,7 +53,7 @@ const CourseManageDetails = () => {
         setLoading(false);
       }
     };
-  
+
     fetchCourseDetails();
   }, [courseId]);
   useEffect(() => {
@@ -72,7 +71,7 @@ const CourseManageDetails = () => {
     fetchStudents();
   }, [courseId]);
 
-  if (loading|| studentsLoading) {
+  if (loading || studentsLoading) {
     return (
       <Box
         sx={{
@@ -109,13 +108,12 @@ const CourseManageDetails = () => {
   const scheduleDays = cleanAndParse(course.scheduleDays || "[]");
   const sessionDates = cleanAndParse(course.sessionDates || "[]");
 
- 
-
- 
-
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+      >
         Course Details: {course.name}
       </Typography>
 
@@ -131,27 +129,35 @@ const CourseManageDetails = () => {
                 <strong>Description:</strong> {course.description}
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-  <strong>Registration Period:</strong>{" "}
-  {new Date(course.registrationStartDate).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })}{" "}
-   - to - {" "}
-  {new Date(course.registrationEndDate).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })}
-</Typography>
+                <strong>Registration Period:</strong>{" "}
+                {new Date(course.registrationStartDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}{" "}
+                - to -{" "}
+                {new Date(course.registrationEndDate).toLocaleDateString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
+              </Typography>
 
               <Typography variant="body1" sx={{ mb: 2 }}>
                 <strong>Price:</strong> {course.price} ({course.paymentType})
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
-  <strong>Schedule Days:</strong>{" "}
-  {scheduleDays.length > 0 ? scheduleDays.join(", ") : "No schedule days available"}
-</Typography>
+                <strong>Schedule Days:</strong>{" "}
+                {scheduleDays.length > 0
+                  ? scheduleDays.join(", ")
+                  : "No schedule days available"}
+              </Typography>
 
               <Typography variant="body1" sx={{ mb: 2 }}>
                 <strong>Number of Sessions:</strong> {course.numberOfSessions}
@@ -191,7 +197,12 @@ const CourseManageDetails = () => {
         <Grid item xs={12} md={6}>
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                mb={2}
+              >
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                   Participating Students
                 </Typography>
@@ -228,7 +239,8 @@ const CourseManageDetails = () => {
                 Instructors
               </Typography>
               <List>
-                {    <ListItem key={course.teacherId} sx={{ py: 1 }}>
+                {
+                  <ListItem key={course.teacherId} sx={{ py: 1 }}>
                     <Avatar sx={{ mr: 2, bgcolor: "secondary.main" }}>
                       <PersonIcon />
                     </Avatar>
@@ -238,7 +250,8 @@ const CourseManageDetails = () => {
                       primaryTypographyProps={{ fontWeight: "medium" }}
                       secondaryTypographyProps={{ color: "text.secondary" }}
                     />
-                  </ListItem>}
+                  </ListItem>
+                }
               </List>
             </CardContent>
           </Card>

@@ -15,7 +15,8 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,FormControl,
+  TableHead,
+  FormControl,
   TableRow,
   IconButton,
   Tooltip,
@@ -30,13 +31,40 @@ import {
   PieChart as PieChartIcon,
   TableChart as TableChartIcon,
 } from "@mui/icons-material";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ChartTooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 // Dummy data for reports
 const courseReports = [
-  { id: 1, name: "Mathematics 101", students: 50, revenue: 10000, status: "Active" },
-  { id: 2, name: "Physics 101", students: 30, revenue: 6000, status: "Completed" },
-  { id: 3, name: "Chemistry 101", students: 40, revenue: 8000, status: "Upcoming" },
+  {
+    id: 1,
+    name: "Mathematics 101",
+    students: 50,
+    revenue: 10000,
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Physics 101",
+    students: 30,
+    revenue: 6000,
+    status: "Completed",
+  },
+  {
+    id: 3,
+    name: "Chemistry 101",
+    students: 40,
+    revenue: 8000,
+    status: "Upcoming",
+  },
 ];
 
 const branchReports = [
@@ -90,7 +118,10 @@ const InstituteReportsScreen = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography
+        variant="h4"
+        sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}
+      >
         Reports
       </Typography>
 
@@ -103,12 +134,18 @@ const InstituteReportsScreen = () => {
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{
-            startAdornment: <SearchIcon sx={{ mr: 1, color: "action.active" }} />,
+            startAdornment: (
+              <SearchIcon sx={{ mr: 1, color: "action.active" }} />
+            ),
           }}
         />
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel>Report Type</InputLabel>
-          <Select value={reportType} onChange={handleReportTypeChange} label="Report Type">
+          <Select
+            value={reportType}
+            onChange={handleReportTypeChange}
+            label="Report Type"
+          >
             <MenuItem value="course">Course Reports</MenuItem>
             <MenuItem value="branch">Branch Reports</MenuItem>
             <MenuItem value="teacher">Teacher Reports</MenuItem>
@@ -138,7 +175,12 @@ const InstituteReportsScreen = () => {
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  mb={3}
+                >
                   <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                     Course Reports
                   </Typography>
@@ -189,7 +231,12 @@ const InstituteReportsScreen = () => {
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  mb={3}
+                >
                   <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                     Branch Reports
                   </Typography>
@@ -229,7 +276,12 @@ const InstituteReportsScreen = () => {
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  mb={3}
+                >
                   <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                     Teacher Reports
                   </Typography>
@@ -269,7 +321,12 @@ const InstituteReportsScreen = () => {
           <Grid item xs={12}>
             <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
               <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  mb={3}
+                >
                   <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                     Financial Reports
                   </Typography>
