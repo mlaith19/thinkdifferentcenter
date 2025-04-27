@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/" replace />; // توجيه إلى الداشبورد
   }
 
-  return children; // إذا كان كل شيء صحيحًا، عرض الصفحة المطلوبة
+  return children;  
 };
 
 export default ProtectedRoute;

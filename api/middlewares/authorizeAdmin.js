@@ -10,7 +10,7 @@ const authorizeAdmin = async (req, res, next) => {
       return res.status(403).json({ message: "You are not authorized to perform this action." });
     }
 
-    // User is authorized
+ 
     next();
   } catch (error) {
     console.error(error);

@@ -22,7 +22,7 @@ function decryptLicenseKey(encryptedData) {
 }
 
 function generateLicenseKey(startDate, endDate) {
-  const randomPart = crypto.randomBytes(4).toString("hex"); // 8 characters
+  const randomPart = crypto.randomBytes(4).toString("hex");  
   return `${startDate}||${endDate}||${randomPart}`;
 }
 

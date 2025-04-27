@@ -13,7 +13,7 @@ const AttendanceReports = () => {
         Attendance Reports
       </Typography>
 
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+      <Paper  elevation={3} sx={{ p: 3, borderRadius: 2 }}>
         <TableContainer>
           <Table>
             <TableHead>

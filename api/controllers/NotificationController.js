@@ -18,7 +18,7 @@ const getUserNotifications = async (req, res) => {
   }
 };
 
-// تحديث حالة الإشعار (تم القراءة)
+ 
 const markNotificationAsRead = async (req, res) => {
   const { notificationId } = req.params;
 

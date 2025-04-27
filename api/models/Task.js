@@ -50,7 +50,7 @@ const Task = sequelize.define("Task", {
 }, {
   timestamps: true,
   paranoid: true,
-  tableName: "Tasks",
+   tableName: "Tasks",
 });
 
 module.exports = Task;

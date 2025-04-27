@@ -13,7 +13,7 @@ import {
 import api from "../../services/api";
 import { decodeToken } from "../../utils/decodeToken";
 const MyCourses = ({}) => {
-  const [courses, setCourses] = useState([]);
+  const  [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");

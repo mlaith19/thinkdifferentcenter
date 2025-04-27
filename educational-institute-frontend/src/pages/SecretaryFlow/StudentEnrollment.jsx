@@ -13,7 +13,7 @@ const StudentEnrollment = () => {
 
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
+      <Typography variant="h4"  sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
         Student Enrollment
       </Typography>
 

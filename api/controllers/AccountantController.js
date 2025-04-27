@@ -23,8 +23,7 @@ const addPayment = async (req, res) => {
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };
-
-// تطبيق خصومات
+ 
 const applyDiscount = async (req, res) => {
   const { studentId, discountAmount } = req.body;
 

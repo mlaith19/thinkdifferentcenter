@@ -168,7 +168,7 @@ router.put(
   CourseController.updateCourse
 );
 
-// Delete a course
+ 
 router.delete(
   "/:courseId",
   authenticate,

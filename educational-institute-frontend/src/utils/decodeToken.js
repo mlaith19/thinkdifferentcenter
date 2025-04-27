@@ -1,6 +1,6 @@
 export const decodeToken = (token) => {
     try {
-      const base64Url = token.split(".")[1]; // جزء الـ payload من الـ Token
+      const base64Url = token.split(".")[1];  
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
         atob(base64)

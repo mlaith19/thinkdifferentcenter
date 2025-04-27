@@ -6,7 +6,7 @@ const initDB = async () => {
         // Create the database if it does not exist
         await createDatabaseIfNotExists(tempSequelize);
 
-        // Authenticate with the correct database
+      
         await sqlDB.authenticate(); // Test the connection to the database
         console.log("Connected to MySQL database.");
 

@@ -35,7 +35,7 @@ const AttendanceTracking = ({ courseId }) => {
     try {
       await api.post("/attendance", {
         courseId,
-        attendance: students.map(student => ({ studentId: student.id, status: student.present ? "present" : "absent" }))
+        attendance: students.map(student =>  ({ studentId: student.id, status: student.present ? "present" : "absent" }))
       });
       setSnackbarOpen(true);
     } catch (error) {
