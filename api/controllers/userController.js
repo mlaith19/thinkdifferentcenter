@@ -12,7 +12,7 @@ const generateToken = (user) => {
     { expiresIn: "500h" }
   );
 };
-
+const { Op } = require("sequelize");
 // إنشاء حساب جديد
 const createUser = async (req, res) => {
   const { username, email, password, fullName, role, instituteId, branchId, birthDate, phone } = req.body; // Include birthDate and phone
@@ -128,23 +128,23 @@ const getUsersByInstituteId = async (req, res) => {
       return res.status(403).json({ message: "You are not authorized to perform this action." });
     }
 
-    const { instituteId: queryInstituteId } = req.query; // Get instituteId from query params
-    const instituteId = requester.instituteId || queryInstituteId; // Use token's instituteId or query param
+    const { instituteId: queryInstituteId } = req.query;
+    const instituteId = requester.instituteId || queryInstituteId;
 
     let users;
 
+    const baseQuery = {
+      where: {
+        role: { [Op.ne]: "super_admin" }, // <-- Exclude super_admin
+      },
+      attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt"],
+    };
+
     if (instituteId) {
-      // Fetch users by instituteId
-      users = await User.findAll({
-        where: { instituteId },
-        attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt"],
-      });
-    } else {
-      // Fetch all users if instituteId is null
-      users = await User.findAll({
-        attributes: ["id", "username", "email", "fullName", "role", "isActive", "branchId", "createdAt", "instituteId"],
-      });
+      baseQuery.where.instituteId = instituteId;
     }
+
+    users = await User.findAll(baseQuery);
 
     res.status(200).json({
       succeed: true,
@@ -158,6 +158,7 @@ const getUsersByInstituteId = async (req, res) => {
     res.status(statusCode).json({ message: errorMessage, errorDetails });
   }
 };
+
 
 const getUsersByBranchId = async (req, res) => {
   const requester = req.user;

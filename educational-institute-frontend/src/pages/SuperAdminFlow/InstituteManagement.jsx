@@ -57,6 +57,7 @@ const InstituteManagement = () => {
     address: "",
     phone: "",
   });
+  console.log("Institute:", institute);
   const [name, setName] = useState(institute?.name || "");
   const [email, setEmail] = useState(institute?.email || "");
   const [startDate, setStartDate] = useState(institute?.startDate || "");
@@ -97,6 +98,7 @@ const InstituteManagement = () => {
       const response = await api.get(`/institute/${institute.id}`);
       const instituteData = response.data.data;
       setInstitute(instituteData);
+      console.log( "Received institute data:", instituteData);
       setName(instituteData.name);
       setEmail(instituteData.email);
       setStartDate(instituteData.startDate);
@@ -496,7 +498,13 @@ const InstituteManagement = () => {
         color="secondary"
         aria-label="users"
         sx={{ position: "fixed", bottom: 80, right: 16 }}
-        onClick={() => navigate(`/institution-users `, { state: { instituteId: institute.id } })}
+        onClick={() => {
+          if (institute?.id) {
+            navigate("/institution-users", { state: { instituteId: institute.id } });
+          } else {
+            console.error("Institute ID is missing", institute);
+          }
+        }}
       >
         <PeopleIcon />
       </Fab>

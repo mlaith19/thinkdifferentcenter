@@ -314,7 +314,7 @@ const InstituteAdminDashboard = () => {
     setLoadingCourses(true); // Start loading
     try {
         const response = await api.get("/courses", { params: { instituteId } });
-        setCourses(response.data); // Set courses
+        setCourses(response.data || []); // Set courses
     } catch (error) {
         setSnackbarMessage("Failed to fetch courses.");
         setSnackbarSeverity("error");
@@ -483,11 +483,11 @@ const InstituteAdminDashboard = () => {
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100px" }}>
         <CircularProgress />
     </Box>
-) : courses.length === 0 ? (
+) : !courses ||courses.length === 0 ? (
     <Typography variant="body2" color="text.secondary">No courses found.</Typography>
 ) : (
     <List>
-        {courses.map((course) => (
+        {Array.isArray(courses) && courses.map((course) => (
             <ListItem key={course.id}>
                 <ListItemText primary={course.name} secondary={`${course.paymentType} - $${course.price}`} />
             </ListItem>

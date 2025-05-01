@@ -63,7 +63,13 @@ const SuperAdminDashboard = () => {
   };
 
   const handleEdit = (instituteId) => {
-    const selectedInstitute = institutes.find((institute) => institute.id === instituteId);
+    const id = Number(instituteId);
+    const selectedInstitute = institutes.find((institute) => institute.id === id);
+    if (!selectedInstitute) {
+      console.error("Institute not found for ID:", instituteId);
+      return;
+    }
+    console.log("Selected Institute:", selectedInstitute.id);
     navigate("/InstituteManagement", { state: { institute: selectedInstitute } });
   };
 
@@ -251,7 +257,9 @@ const SuperAdminDashboard = () => {
 
                       {/* Edit and Delete Actions */}
                       <CardActions sx={{ justifyContent: "flex-end", p: 2 }}>
-                        <IconButton onClick={() => handleEdit(institute.id)} color="primary">
+                        <IconButton onClick={() => 
+                           
+                          handleEdit(institute.id)} color="primary">
                           <EditIcon />
                         </IconButton>
                         <IconButton onClick={() => handleDeleteClick(institute.id)} color="error">

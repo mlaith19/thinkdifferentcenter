@@ -39,7 +39,8 @@ import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Search as Searc
 const InstitutionUsers = () => {
   const location = useLocation();
   const token = localStorage.getItem("token"); const user = decodeToken(token);
-  const instituteId = location.state?.instituteId;
+  const { state } = location;
+  const instituteId = state?.instituteId;
 
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,7 +68,7 @@ const InstitutionUsers = () => {
     setLoading(true);
     try {
       const response = await api.get("/users/institute", {
-        params: { instituteId :user.instituteId},
+        params: { instituteId :user.instituteId||instituteId },
       });
       setUsers(response.data.data);
     } catch (error) {
@@ -83,7 +84,7 @@ const InstitutionUsers = () => {
   // Fetch branches from the API
   const fetchBranches = async () => {
     try {
-      const response = await api.get(`/institute/${user.instituteId}/branches`);
+      const response = await api.get(`/institute/${instituteId}/branches`);
       setBranches(response.data.branches || []);
     } catch (error) {
       setSnackbarMessage("Failed to fetch branches. Cannot create users.");
