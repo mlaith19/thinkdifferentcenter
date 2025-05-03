@@ -101,7 +101,7 @@ const [selectedTeacherName, setSelectedTeacherName] = useState("");
     setLoading(true);
     try {
       const response = await api.get("/courses", { params: { instituteId } });
-      setCourses(response.data);
+      setCourses(response.data.data || []);
     } catch (error) {
       setSnackbarMessage("Failed to fetch courses.");
       setSnackbarSeverity("error");
@@ -224,9 +224,11 @@ const [selectedTeacherName, setSelectedTeacherName] = useState("");
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
 
   // Filter courses based on search query
-  const filteredCourses = courses.filter((course) =>
-    course.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCourses = Array.isArray(courses) 
+  ? courses.filter((course) =>
+      course.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : [];
 
   // Handle viewing details
   const handleViewDetails = (courseId) =>

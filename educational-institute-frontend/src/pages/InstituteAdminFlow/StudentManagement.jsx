@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo ,useCallback} from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -44,21 +44,27 @@ const StudentManagement = () => {
   const [actionType, setActionType] = useState(null);
   const [actionStudentId, setActionStudentId] = useState(null);
 
+
   const token = localStorage.getItem("token");
-  const user = decodeToken(token);
+  const user = useMemo(() => decodeToken(token), [token]);
 
   // Fetch students on component mount
   useEffect(() => {
-    if (user && user.instituteId) {
+    if (user?.instituteId) {
       fetchStudents();
     }
-  }, [user]);
+  }, [user?.instituteId, token]); 
 
   // Fetch students from the API
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get(`/student/institute/${user.instituteId}/students`);
+      if(!response.data.data||response.data.data.length===0){
+        setSnackbarMessage("No students found.");
+        setSnackbarSeverity("info");
+        setSnackbarOpen(true);
+      } 
       setStudents(response.data.data);
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -68,7 +74,7 @@ const StudentManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.instituteId]);
 
   // Handle search input
   const handleSearchChange = (event) => {

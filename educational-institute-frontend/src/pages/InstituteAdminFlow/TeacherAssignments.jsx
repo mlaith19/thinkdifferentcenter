@@ -43,7 +43,7 @@ const TeacherAssignments = () => {
     setLoading(true);
     try {
       const response = await api.get("/courses");
-      setAssignments(response.data);
+      setAssignments(response.data.data);
     } catch (error) {
       setSnackbarMessage("Failed to fetch courses.");
       setSnackbarSeverity("error");

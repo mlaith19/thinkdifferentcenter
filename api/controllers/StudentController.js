@@ -23,10 +23,10 @@ const getStudentsByInstituteId = async (req, res) => {
     });
 
     if (!students || students.length === 0) {
-      return res.status(404).json({
-        succeed: false,
+      return res.status(201).json({
+        succeed: true,
         message: "No students found for this institute.",
-        data: null,
+        data: [],
         errorDetails: null,
       });
     }

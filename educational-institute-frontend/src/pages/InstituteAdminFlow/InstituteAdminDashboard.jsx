@@ -314,7 +314,7 @@ const InstituteAdminDashboard = () => {
     setLoadingCourses(true); // Start loading
     try {
         const response = await api.get("/courses", { params: { instituteId } });
-        setCourses(response.data || []); // Set courses
+        setCourses(response.data.data || []); // Set courses
     } catch (error) {
         setSnackbarMessage("Failed to fetch courses.");
         setSnackbarSeverity("error");
