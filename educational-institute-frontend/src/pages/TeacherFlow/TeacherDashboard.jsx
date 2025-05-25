@@ -1,47 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { 
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Tabs, Tab, CircularProgress, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
-  TextField, Grid, Snackbar, Alert, Checkbox, FormControl, InputLabel, Select, MenuItem,
-  useMediaQuery, List, ListItem, ListItemText 
+  CircularProgress, Button, Grid, Card, CardContent, CardActions, useMediaQuery
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  School as SchoolIcon,
+  Group as GroupIcon,
+  Schedule as ScheduleIcon,
+  Assignment as AssignmentIcon,
+  Assessment as AssessmentIcon,
+  CloudUpload as CloudUploadIcon
+} from "@mui/icons-material";
 import api from "../../services/api";
 import Navbar from "../../components/Navbar";
 import { decodeToken } from "../../utils/decodeToken";
-import TeacherReplacementForm from "./TeacherReplacementForm";
 
 const TeacherDashboard = () => {
-  const [tabValue, setTabValue] = useState(0);
+  const { t } = useTranslation();
   const [courses, setCourses] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [openSessionDialog, setOpenSessionDialog] = useState(false);
-  const [openReplacementDialog, setOpenReplacementDialog] = useState(false);
-  const [selectedSession, setSelectedSession] = useState(null);
-  const [teachingHourMethod, setTeachingHourMethod] = useState('60min');
-  const [newSession, setNewSession] = useState({
-    date: "",
-    startTime: "",
-    endTime: "",
-    courseId: "",
-  });
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const token = localStorage.getItem("token");
   const user = decodeToken(token);
   const teacherId = user?.userId;
   const instituteId = user?.instituteId;
-  const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
     fetchCourses();
-    fetchSessions();
   }, [teacherId]);
 
   const fetchCourses = async () => {
@@ -62,325 +51,177 @@ const TeacherDashboard = () => {
     }
   };
 
-  const fetchSessions = async () => {
-    try {
-      const response = await api.get(`/teacher/${teacherId}/sessions`);
-      setSessions(response.data);
-    } catch (error) {
-      setError("Failed to fetch sessions.");
-      console.error("Error fetching sessions:", error);
+  const dashboardItems = [
+    {
+      title: t('teacherDashboard.myCourses'),
+      icon: <SchoolIcon sx={{ fontSize: 40 }} />,
+      path: "/my-courses",
+      description: t('teacherDashboard.myCoursesDesc')
+    },
+    {
+      title: t('teacherDashboard.courseSchedule'),
+      icon: <ScheduleIcon sx={{ fontSize: 40 }} />,
+      path: "/course-schedule",
+      description: t('teacherDashboard.courseScheduleDesc')
+    },
+    {
+      title: t('teacherDashboard.attendanceTracking'),
+      icon: <GroupIcon sx={{ fontSize: 40 }} />,
+      path: "/attendance-tracking",
+      description: t('teacherDashboard.attendanceTrackingDesc')
+    },
+    {
+      title: t('teacherDashboard.studentProgress'),
+      icon: <AssessmentIcon sx={{ fontSize: 40 }} />,
+      path: "/student-progress",
+      description: t('teacherDashboard.studentProgressDesc')
+    },
+    {
+      title: t('teacherDashboard.materialsUpload'),
+      icon: <CloudUploadIcon sx={{ fontSize: 40 }} />,
+      path: "/materials-upload",
+      description: t('teacherDashboard.materialsUploadDesc')
+    },
+    {
+      title: t('teacherDashboard.sessionManagement'),
+      icon: <AssignmentIcon sx={{ fontSize: 40 }} />,
+      path: "/sessions",
+      description: t('teacherDashboard.sessionManagementDesc')
     }
-  };
+  ];
 
-  const calculateTeachingHours = (startTime, endTime) => {
-    const [startH, startM] = startTime.split(':').map(Number);
-    const [endH, endM] = endTime.split(':').map(Number);
-    
-    const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
-    
-    if (teachingHourMethod === '45min') {
-      return (totalMinutes / 45).toFixed(2);
-    }
-    return (totalMinutes / 60).toFixed(2);
-  };
-
-  const handleCreateSession = async (e) => {
-    e.preventDefault();
-    try {
-      const sessionData = {
-        ...newSession,
-        teacherId,
-        teachingHours: calculateTeachingHours(newSession.startTime, newSession.endTime),
-        teachingHourMethod
-      };
-      
-      await api.post("/session/create", sessionData);
-      setNewSession({
-        date: "",
-        startTime: "",
-        endTime: "",
-        courseId: ""
-      });
-      setOpenSessionDialog(false);
-      setSnackbarMessage("Session created successfully!");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      fetchSessions();
-    } catch (error) {
-      setError("Failed to create session.");
-      console.error("Error creating session:", error);
-    }
-  };
-
-  const handleToggleAttendance = (id) => {
-    setStudents(students.map((student) => 
-      student.id === id ? { ...student, present: !student.present } : student
-    ));
-  };
-
-  const handleSaveAttendance = async (courseId, sessionId) => {
-    try {
-      const attendanceData = students.map((student) => ({
-        studentId: student.id,
-        status: student.present ? "present" : "absent",
-        sessionId,
-        courseId
-      }));
-      
-      await api.post("/attendance", { 
-        attendance: attendanceData,
-        teachingHourMethod
-      });
-      
-      setSnackbarMessage("Attendance saved successfully!");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      
-      await api.post("/financial/update-teacher-payment", { 
-        teacherId,
-        sessionId 
-      });
-    } catch (error) {
-      setError("Failed to save attendance.");
-      console.error("Error saving attendance:", error);
-    }
-  };
-
-  const generateSessions = async (courseId) => {
-    try {
-      const response = await api.post(`/courses/${courseId}/generate-sessions`, {
-        teacherId,
-        teachingHourMethod
-      });
-      setSessions(response.data);
-      setSnackbarMessage("Sessions generated successfully!");
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-    } catch (error) {
-      setError("Failed to generate sessions.");
-      console.error("Error generating sessions:", error);
-    }
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Navbar />
       <Box sx={{ p: 3 }}>
         <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
-          Teacher Dashboard
+          {t('teacherDashboard.title')}
         </Typography>
-        
-        <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 4 }}>
-          <Tab label="My Courses" />
-          <Tab label="Course Schedule" />
-          <Tab label="Attendance Tracking" />
-          <Tab label="Session Management" />
-        </Tabs>
 
-        {tabValue === 0 && (
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>My Courses</Typography>
-            {isMobile ? (
-              <List>
-                {courses.map((course) => (
-                  <ListItem key={course.id}>
-                    <ListItemText 
-                      primary={course.name}
-                      secondary={`Students: ${course.studentCount} | Status: ${course.status}`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: "bold" }}>Course Name</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Students</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {courses.map((course) => (
-                      <TableRow key={course.id}>
-                        <TableCell>{course.name}</TableCell>
-                        <TableCell>{course.studentCount}</TableCell>
-                        <TableCell>{course.status}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Paper>
-        )}
+        {/* Quick Stats */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+              <Typography variant="h6" color="primary">
+                {courses.length}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('teacherDashboard.activeCourses')}
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper elevation={3} sx={{ p: 2, textAlign: "center" }}>
+              <Typography variant="h6" color="primary">
+                {courses.reduce((acc, course) => acc + course.studentCount, 0)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('teacherDashboard.totalStudents')}
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
 
-        {tabValue === 1 && (
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: "bold" }}>Course Schedule</Typography>
-              <Button 
-                variant="contained" 
-                onClick={() => generateSessions(courses[0]?.id)}
-                disabled={!courses.length}
-              >
-                Generate Sessions
-              </Button>
-            </Box>
-            {isMobile ? (
-              <List>
-                {sessions.map((session) => (
-                  <ListItem key={session.id}>
-                    <ListItemText 
-                      primary={session.courseName}
-                      secondary={`${session.date} | ${session.startTime}-${session.endTime}`}
-                    />
-                    <Button 
-                      size="small" 
-                      startIcon={<SwapHorizIcon />}
-                      onClick={() => {
-                        setSelectedSession(session);
-                        setOpenReplacementDialog(true);
-                      }}
-                    >
-                      Replace
-                    </Button>
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Course Name</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Time</TableCell>
-                      <TableCell>Teaching Hours</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sessions.map((session) => (
-                      <TableRow key={session.id}>
-                        <TableCell>{session.courseName}</TableCell>
-                        <TableCell>{session.date}</TableCell>
-                        <TableCell>{session.startTime}-{session.endTime}</TableCell>
-                        <TableCell>
-                          {calculateTeachingHours(session.startTime, session.endTime)} ({teachingHourMethod})
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            startIcon={<SwapHorizIcon />}
-                            onClick={() => {
-                              setSelectedSession(session);
-                              setOpenReplacementDialog(true);
-                            }}
-                          >
-                            Replace Teacher
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </Paper>
-        )}
-
-        {/* Other tabs remain similar but updated with mobile views */}
-        
-        <Dialog open={openSessionDialog} onClose={() => setOpenSessionDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Create New Session</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Date"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={newSession.date}
-                  onChange={(e) => setNewSession({ ...newSession, date: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Start Time"
-                  type="time"
-                  InputLabelProps={{ shrink: true }}
-                  value={newSession.startTime}
-                  onChange={(e) => setNewSession({ ...newSession, startTime: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="End Time"
-                  type="time"
-                  InputLabelProps={{ shrink: true }}
-                  value={newSession.endTime}
-                  onChange={(e) => setNewSession({ ...newSession, endTime: e.target.value })}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Teaching Hour Method</InputLabel>
-                  <Select
-                    value={teachingHourMethod}
-                    onChange={(e) => setTeachingHourMethod(e.target.value)}
+        {/* Dashboard Grid */}
+        <Grid container spacing={3}>
+          {dashboardItems.map((item, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                    {item.icon}
+                    <Typography variant="h6" sx={{ ml: 1 }}>
+                      {item.title}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {item.description}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    component={Link}
+                    to={item.path}
+                    variant="contained"
+                    fullWidth
                   >
-                    <MenuItem value="60min">60 Minutes (Standard Hour)</MenuItem>
-                    <MenuItem value="45min">45 Minutes (Teaching Hour)</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Course ID"
-                  value={newSession.courseId}
-                  onChange={(e) => setNewSession({ ...newSession, courseId: e.target.value })}
-                />
-              </Grid>
+                    {t('common.actions.view')}
+                  </Button>
+                </CardActions>
+              </Card>
             </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenSessionDialog(false)} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleCreateSession} color="primary">
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
+          ))}
+        </Grid>
 
-        <TeacherReplacementForm
-          open={openReplacementDialog}
-          onClose={() => setOpenReplacementDialog(false)}
-          originalTeacher={{ id: teacherId, name: user?.fullName }}
-          session={selectedSession}
-        />
-
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={() => setSnackbarOpen(false)}
-        >
-          <Alert
-            onClose={() => setSnackbarOpen(false)}
-            severity={snackbarSeverity}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+        {/* Recent Courses */}
+        <Paper elevation={3} sx={{ p: 3, mt: 4, borderRadius: 2 }}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>
+            {t('teacherDashboard.recentCourses')}
+          </Typography>
+          {isMobile ? (
+            <Box>
+              {courses.slice(0, 3).map((course) => (
+                <Box key={course.id} sx={{ mb: 2, p: 2, bgcolor: "background.paper", borderRadius: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                    {course.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {t('teacherDashboard.students')}: {course.studentCount}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    component={Link}
+                    to={`/course-details/${course.id}`}
+                    sx={{ mt: 1 }}
+                  >
+                    {t('common.actions.view')}
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>{t('teacherDashboard.courseName')}</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>{t('teacherDashboard.students')}</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>{t('teacherDashboard.status')}</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>{t('common.actions.view')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {courses.slice(0, 3).map((course) => (
+                    <TableRow key={course.id}>
+                      <TableCell>{course.name}</TableCell>
+                      <TableCell>{course.studentCount}</TableCell>
+                      <TableCell>{course.status}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          component={Link}
+                          to={`/course-details/${course.id}`}
+                        >
+                          {t('common.actions.view')}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
       </Box>
     </Box>
   );

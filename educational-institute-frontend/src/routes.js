@@ -55,6 +55,7 @@ import AttendanceReports from "./pages/SecretaryFlow/AttendanceReports.jsx";
 import FinancialReports from "./pages/AccountantFlow/FinancialReports.jsx";
 import PaymentTracking from "./pages/AccountantFlow/PaymentTracking.jsx";
 import DiscountManagement from "./pages/AccountantFlow/DiscountManagement.jsx";
+import CourseDetails from "./pages/TeacherFlow/CourseDetails";
 
 export const AppRoutes = () => {
   return (
@@ -442,6 +443,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["accountant"]}>
             <DiscountManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/course-details/:courseId"
+        element={
+          <ProtectedRoute allowedRoles={["teacher", "institute_admin"]}>
+            <CourseDetails />
           </ProtectedRoute>
         }
       />

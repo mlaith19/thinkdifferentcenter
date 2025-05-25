@@ -7,15 +7,15 @@
       "totalBranches": "סה״כ סניפים",
       "recentActivity": "פעילות אחרונה",
       "viewAll": "הצג הכל",
-      "noInstitutes": "טרם נוספו מוסדות.",
+      "noInstitutes": "אין מוסדות שהוספו עדיין.",
       "subscriptionPeriod": "תקופת מנוי",
       "startDate": "תאריך התחלה",
       "endDate": "תאריך סיום",
       "admin": "מנהל",
       "noAdmin": "לא מונה מנהל.",
       "branches": "סניפים",
-      "noAddress": "אין כתובת",
-      "noPhone": "אין מספר טלפון",
+      "noAddress": "לא סופק כתובת",
+      "noPhone": "לא סופק מספר טלפון",
       "edit": "ערוך",
       "delete": "מחק",
       "confirmDelete": "מחק מוסד",
@@ -67,11 +67,80 @@
       "save": "שמור שינויים"
     },
     "reports": {
-      "title": "דוחות מוסד",
+      "title": "דוחות מוסדות",
       "generateReport": "צור דוח",
       "downloadReport": "הורד דוח",
       "reportType": "סוג דוח",
       "dateRange": "טווח תאריכים"
     }
+  },
+  "studentManagement": {
+    "title": "ניהול תלמידים",
+    "searchPlaceholder": "חיפוש תלמידים...",
+    "table": {
+      "name": "שם",
+      "email": "דוא״ל",
+      "phone": "טלפון",
+      "birthDate": "תאריך לידה",
+      "status": "סטטוס",
+      "actions": "פעולות"
+    },
+    "form": {
+      "fullName": "שם מלא",
+      "email": "דוא״ל",
+      "phone": "טלפון",
+      "birthDate": "תאריך לידה",
+      "password": "סיסמה"
+    },
+    "edit": {
+      "title": "ערוך תלמיד"
+    },
+    "create": {
+      "title": "צור תלמיד חדש"
+    }
+  },
+  "common": {
+    "status": {
+      "active": "פעיל",
+      "inactive": "לא פעיל"
+    },
+    "actions": {
+      "cancel": "ביטול",
+      "save": "שמור",
+      "create": "צור",
+      "confirm": "אשר",
+      "delete": "מחק",
+      "edit": "ערוך",
+      "view": "הצג"
+    },
+    "confirm": {
+      "title": "אשר פעולה",
+      "message": "האם אתה בטוח שברצונך {{action}} תלמיד זה?"
+    }
+  },
+  "teacherDashboard": {
+    "title": "לוח בקרת מורה",
+    "activeCourses": "קורסים פעילים",
+    "totalStudents": "סך כל התלמידים",
+    "recentCourses": "קורסים אחרונים",
+    "courseName": "שם הקורס",
+    "students": "תלמידים",
+    "status": "סטטוס",
+    "myCourses": "הקורסים שלי",
+    "myCoursesDesc": "צפה ונהל את הקורסים שהוקצו לך",
+    "courseSchedule": "לוח זמנים של הקורס",
+    "courseScheduleDesc": "צפה ונהל את לוח הזמנים של הקורסים שלך",
+    "attendanceTracking": "מעקב נוכחות",
+    "attendanceTrackingDesc": "עקוב אחר נוכחות תלמידים בקורסים שלך",
+    "studentProgress": "התקדמות תלמידים",
+    "studentProgressDesc": "עקוב ועדכן את התקדמות התלמידים",
+    "materialsUpload": "העלאת חומרים",
+    "materialsUploadDesc": "העלה ונהל חומרי קורס",
+    "sessionManagement": "ניהול שיעורים",
+    "sessionManagementDesc": "נהל שיעורים והחלפות",
+    "sessions": "שיעורים",
+    "attendance": "נוכחות",
+    "progress": "התקדמות",
+    "actions": "פעולות"
   }
 } 

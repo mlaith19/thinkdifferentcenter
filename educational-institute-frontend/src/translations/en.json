@@ -73,5 +73,74 @@
       "reportType": "Report Type",
       "dateRange": "Date Range"
     }
+  },
+  "studentManagement": {
+    "title": "Student Management",
+    "searchPlaceholder": "Search students...",
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "birthDate": "Birth Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone",
+      "birthDate": "Birth Date",
+      "password": "Password"
+    },
+    "edit": {
+      "title": "Edit Student"
+    },
+    "create": {
+      "title": "Create New Student"
+    }
+  },
+  "common": {
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "create": "Create",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "edit": "Edit",
+      "view": "View"
+    },
+    "confirm": {
+      "title": "Confirm Action",
+      "message": "Are you sure you want to {{action}} this student?"
+    }
+  },
+  "teacherDashboard": {
+    "title": "Teacher Dashboard",
+    "activeCourses": "Active Courses",
+    "totalStudents": "Total Students",
+    "recentCourses": "Recent Courses",
+    "courseName": "Course Name",
+    "students": "Students",
+    "status": "Status",
+    "myCourses": "My Courses",
+    "myCoursesDesc": "View and manage your assigned courses",
+    "courseSchedule": "Course Schedule",
+    "courseScheduleDesc": "View and manage your course schedule",
+    "attendanceTracking": "Attendance Tracking",
+    "attendanceTrackingDesc": "Track student attendance for your courses",
+    "studentProgress": "Student Progress",
+    "studentProgressDesc": "Monitor and update student progress",
+    "materialsUpload": "Materials Upload",
+    "materialsUploadDesc": "Upload and manage course materials",
+    "sessionManagement": "Session Management",
+    "sessionManagementDesc": "Manage course sessions and replacements",
+    "sessions": "Sessions",
+    "attendance": "Attendance",
+    "progress": "Progress",
+    "actions": "Actions"
   }
 } 

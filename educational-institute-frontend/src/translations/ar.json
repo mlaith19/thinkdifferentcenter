@@ -7,15 +7,15 @@
       "totalBranches": "إجمالي الفروع",
       "recentActivity": "النشاط الأخير",
       "viewAll": "عرض الكل",
-      "noInstitutes": "لم يتم إضافة معاهد بعد.",
+      "noInstitutes": "لا توجد معاهد مضافة حتى الآن.",
       "subscriptionPeriod": "فترة الاشتراك",
       "startDate": "تاريخ البدء",
       "endDate": "تاريخ الانتهاء",
       "admin": "المدير",
       "noAdmin": "لم يتم تعيين مدير.",
       "branches": "الفروع",
-      "noAddress": "لا يوجد عنوان",
-      "noPhone": "لا يوجد رقم هاتف",
+      "noAddress": "لم يتم تقديم عنوان",
+      "noPhone": "لم يتم تقديم رقم هاتف",
       "edit": "تعديل",
       "delete": "حذف",
       "confirmDelete": "حذف المعهد",
@@ -67,11 +67,76 @@
       "save": "حفظ التغييرات"
     },
     "reports": {
-      "title": "تقارير المعهد",
+      "title": "تقارير المعاهد",
       "generateReport": "إنشاء تقرير",
       "downloadReport": "تحميل التقرير",
       "reportType": "نوع التقرير",
       "dateRange": "النطاق الزمني"
     }
+  },
+  "studentManagement": {
+    "title": "إدارة الطلاب",
+    "searchPlaceholder": "البحث عن الطلاب...",
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "birthDate": "تاريخ الميلاد",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "form": {
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "birthDate": "تاريخ الميلاد",
+      "password": "كلمة المرور"
+    },
+    "edit": {
+      "title": "تعديل الطالب"
+    },
+    "create": {
+      "title": "إضافة طالب جديد"
+    }
+  },
+  "common": {
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "actions": {
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "create": "إنشاء",
+      "confirm": "تأكيد",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "view": "عرض"
+    },
+    "confirm": {
+      "title": "تأكيد الإجراء",
+      "message": "هل أنت متأكد من {{action}} هذا الطالب؟"
+    }
+  },
+  "teacherDashboard": {
+    "title": "لوحة تحكم المعلم",
+    "activeCourses": "الدورات النشطة",
+    "totalStudents": "إجمالي الطلاب",
+    "recentCourses": "الدورات الأخيرة",
+    "courseName": "اسم الدورة",
+    "students": "الطلاب",
+    "status": "الحالة",
+    "myCourses": "دوراتي",
+    "myCoursesDesc": "عرض وإدارة الدورات المسندة إليك",
+    "courseSchedule": "جدول الدورة",
+    "courseScheduleDesc": "عرض وإدارة جدول دوراتك",
+    "attendanceTracking": "تتبع الحضور",
+    "attendanceTrackingDesc": "تتبع حضور الطلاب لدوراتك",
+    "studentProgress": "تقدم الطلاب",
+    "studentProgressDesc": "مراقبة وتحديث تقدم الطلاب",
+    "materialsUpload": "رفع المواد",
+    "materialsUploadDesc": "رفع وإدارة مواد الدورة",
+    "sessionManagement": "إدارة الجلسات",
+    "sessionManagementDesc": "إدارة جلسات الدورة والبدائل"
   }
 } 

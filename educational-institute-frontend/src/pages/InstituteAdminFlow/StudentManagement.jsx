@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo ,useCallback} from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Typography,
@@ -29,13 +30,14 @@ import api from "../../services/api";
 import { decodeToken } from "../../utils/decodeToken";
 
 const StudentManagement = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudentDialogOpen, setNewStudentDialogOpen] = useState(false);
-  const [newStudent, setNewStudent] = useState({ fullName: "", email: "", phone: "", birthDate: "" ,  password: "",});
+  const [newStudent, setNewStudent] = useState({ fullName: "", email: "", phone: "", birthDate: "", password: "", });
   const [loading, setLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -43,7 +45,6 @@ const StudentManagement = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState(null);
   const [actionStudentId, setActionStudentId] = useState(null);
-
 
   const token = localStorage.getItem("token");
   const user = useMemo(() => decodeToken(token), [token]);
@@ -53,18 +54,18 @@ const StudentManagement = () => {
     if (user?.instituteId) {
       fetchStudents();
     }
-  }, [user?.instituteId, token]); 
+  }, [user?.instituteId, token]);
 
   // Fetch students from the API
   const fetchStudents = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get(`/student/institute/${user.instituteId}/students`);
-      if(!response.data.data||response.data.data.length===0){
+      if (!response.data.data || response.data.data.length === 0) {
         setSnackbarMessage("No students found.");
         setSnackbarSeverity("info");
         setSnackbarOpen(true);
-      } 
+      }
       setStudents(response.data.data);
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -141,15 +142,13 @@ const StudentManagement = () => {
 
   // Save new student
   const handleNewStudentSave = async () => {
-    try {  const emailParts = newStudent.email.split(/[.@]/);
+    try {
+      const emailParts = newStudent.email.split(/[.@]/);
       const generatedUsername = emailParts[0];
-      await api.post("/users/create", { ...newStudent, instituteId: user.instituteId , 
-        username: generatedUsername,
-        role: "student",
-        branchId: newStudent.branchId,});
+      await api.post("/users/create", { ...newStudent, instituteId: user.instituteId, username: generatedUsername, role: "student", branchId: newStudent.branchId, });
       fetchStudents();
       setNewStudentDialogOpen(false);
-      setNewStudent({ fullName: "", email: "", phone: "", birthDate: "", password: ""  });
+      setNewStudent({ fullName: "", email: "", phone: "", birthDate: "", password: "" });
       setSnackbarMessage("Student created successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
@@ -191,7 +190,7 @@ const StudentManagement = () => {
   return (
     <Box sx={{ p: 4, bgcolor: "background.default", minHeight: "100vh" }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "primary.main" }}>
-        Student Management
+        {t('studentManagement.title')}
       </Typography>
 
       {/* Search Field */}
@@ -199,7 +198,7 @@ const StudentManagement = () => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Search students..."
+          placeholder={t('studentManagement.searchPlaceholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{
@@ -213,12 +212,12 @@ const StudentManagement = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Birth Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>{t('studentManagement.table.name')}</TableCell>
+              <TableCell>{t('studentManagement.table.email')}</TableCell>
+              <TableCell>{t('studentManagement.table.phone')}</TableCell>
+              <TableCell>{t('studentManagement.table.birthDate')}</TableCell>
+              <TableCell>{t('studentManagement.table.status')}</TableCell>
+              <TableCell>{t('studentManagement.table.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -229,7 +228,10 @@ const StudentManagement = () => {
                 <TableCell>{student.phone}</TableCell>
                 <TableCell>{student.birthDate}</TableCell>
                 <TableCell>
-                  <Chip label={student.isActive ? "Active" : "Inactive"} color={student.isActive ? "success" : "error"} />
+                  <Chip 
+                    label={student.isActive ? t('common.status.active') : t('common.status.inactive')} 
+                    color={student.isActive ? "success" : "error"} 
+                  />
                 </TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEditClick(student)} color="primary">
@@ -252,103 +254,103 @@ const StudentManagement = () => {
 
       {/* Edit Student Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
-        <DialogTitle>Edit Student</DialogTitle>
+        <DialogTitle>{t('studentManagement.edit.title')}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
-            label="Full Name"
+            label={t('studentManagement.form.fullName')}
             value={selectedStudent?.fullName || ""}
             onChange={(e) => setSelectedStudent({ ...selectedStudent, fullName: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Email"
+            label={t('studentManagement.form.email')}
             value={selectedStudent?.email || ""}
             onChange={(e) => setSelectedStudent({ ...selectedStudent, email: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Phone"
+            label={t('studentManagement.form.phone')}
             value={selectedStudent?.phone || ""}
             onChange={(e) => setSelectedStudent({ ...selectedStudent, phone: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Birth Date"
+            label={t('studentManagement.form.birthDate')}
             type="date"
             InputLabelProps={{ shrink: true }}
             value={selectedStudent?.birthDate || ""}
             onChange={(e) => setSelectedStudent({ ...selectedStudent, birthDate: e.target.value })}
-          /> 
-        
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditSave} color="primary">Save</Button>
+          <Button onClick={() => setEditDialogOpen(false)}>{t('common.actions.cancel')}</Button>
+          <Button onClick={handleEditSave} color="primary">{t('common.actions.save')}</Button>
         </DialogActions>
       </Dialog>
 
       {/* New Student Dialog */}
       <Dialog open={newStudentDialogOpen} onClose={() => setNewStudentDialogOpen(false)}>
-        <DialogTitle>Create New Student</DialogTitle>
+        <DialogTitle>{t('studentManagement.create.title')}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
-            label="Full Name"
+            label={t('studentManagement.form.fullName')}
             value={newStudent.fullName}
             onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Email"
+            label={t('studentManagement.form.email')}
             value={newStudent.email}
             onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Phone"
+            label={t('studentManagement.form.phone')}
             value={newStudent.phone}
             onChange={(e) => setNewStudent({ ...newStudent, phone: e.target.value })}
             sx={{ mb: 2 }}
           />
           <TextField
             fullWidth
-            label="Birth Date"
+            label={t('studentManagement.form.birthDate')}
             type="date"
             InputLabelProps={{ shrink: true }}
             value={newStudent.birthDate}
             onChange={(e) => setNewStudent({ ...newStudent, birthDate: e.target.value })}
           />
-              {/* Password Field */}
-              <TextField
+          <TextField
             fullWidth
-            label="Password"
+            label={t('studentManagement.form.password')}
             type="password"
-            value={newStudent.password}      
+            value={newStudent.password}
             onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
-            sx={{ mb: 2 ,mt: 2 }}
+            sx={{ mb: 2, mt: 2 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNewStudentDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleNewStudentSave} color="primary">Create</Button>
+          <Button onClick={() => setNewStudentDialogOpen(false)}>{t('common.actions.cancel')}</Button>
+          <Button onClick={handleNewStudentSave} color="primary">{t('common.actions.create')}</Button>
         </DialogActions>
       </Dialog>
 
       {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)}>
-        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogTitle>{t('common.confirm.title')}</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to {actionType} this student?</Typography>
+          <Typography>
+            {t('common.confirm.message', { action: t(`common.actions.${actionType}`) })}
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmedAction} color="primary">Confirm</Button>
+          <Button onClick={() => setConfirmDialogOpen(false)}>{t('common.actions.cancel')}</Button>
+          <Button onClick={handleConfirmedAction} color="primary">{t('common.actions.confirm')}</Button>
         </DialogActions>
       </Dialog>
 
