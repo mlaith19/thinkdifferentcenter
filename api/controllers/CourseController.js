@@ -174,34 +174,87 @@ const getCourseById = async (req, res) => {
         {
           model: ParticipatingStudents,
           as: "enrollments",
-          attributes: [], // We only need the count, no need to fetch student details
+          include: [
+            {
+              model: User,
+              as: "student",
+              attributes: ['id', 'fullName', 'email', 'phone', 'birthDate', 'role']
+            }
+          ]
         },
+        {
+          model: User,
+          as: "teacher",
+          attributes: ['id', 'fullName', 'email', 'phone', 'role', 'teachingHourType']
+        },
+        {
+          model: Branch,
+          as: "branch",
+          attributes: ['id', 'name', 'address', 'phone']
+        }
       ],
       attributes: {
         include: [
-          [Sequelize.fn("COUNT", sequelize.col("enrollments.id")), "studentCount"],
-        ],
+          [Sequelize.fn("COUNT", Sequelize.col("enrollments.id")), "studentCount"]
+        ]
       },
-      group: ["Course.id"], // Ensure count aggregation works correctly
+      group: [
+        "Course.id",
+        "enrollments.id",
+        "enrollments->student.id",
+        "teacher.id",
+        "branch.id"
+      ]
     });
 
     if (!course) {
       return res.status(404).json({
+        succeed: false,
         message: "Course not found.",
         data: null,
         errorDetails: null,
       });
     }
 
+    // Format the response data
+    const formattedCourse = {
+      id: course.id,
+      name: course.name,
+      description: course.description,
+      paymentType: course.paymentType,
+      price: course.price,
+      registrationStartDate: course.registrationStartDate,
+      registrationEndDate: course.registrationEndDate,
+      minAge: course.minAge,
+      maxAge: course.maxAge,
+      numberOfSessions: course.numberOfSessions,
+      scheduleDays: course.scheduleDays,
+      autoGenerateSchedule: course.autoGenerateSchedule,
+      status: course.status,
+      sessionDates: course.sessionDates,
+      studentCount: course.getDataValue('studentCount'),
+      teacher: course.teacher,
+      branch: course.branch,
+      enrolledStudents: course.enrollments.map(enrollment => ({
+        enrollmentId: enrollment.id,
+        enrollmentDate: enrollment.enrollmentDate,
+        status: enrollment.status,
+        student: enrollment.student
+      }))
+    };
+
     res.status(200).json({
+      succeed: true,
       message: "Course fetched successfully.",
-      data: course,
+      data: formattedCourse,
       errorDetails: null,
     });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({
+      succeed: false,
       message: errorMessage,
+      data: null,
       errorDetails,
     });
   }

@@ -19,6 +19,7 @@ Institute.hasMany(User, { foreignKey: "instituteId" });
 User.belongsTo(Branch, { foreignKey: "branchId", as: "branch" }); // Alias: branch
 Branch.hasMany(User, { foreignKey: "branchId", as: "users" });     // Alias: users
 Branch.hasMany(Course, { foreignKey: "branchId", as: "courses" }); // Alias: courses
+Course.belongsTo(Branch, { foreignKey: "branchId", as: "branch" });
 // تعريف العلاقة بين Role و Permission
 Course.belongsTo(User, { foreignKey: "teacherId", as: "teacher" }); // Alias: teacher
 User.hasMany(Course, { foreignKey: "teacherId", as: "courses" });   // Alias: courses
