@@ -1,12 +1,30 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery, Drawer, List, ListItem, ListItemText } from "@mui/material";
+import { useTranslation } from 'react-i18next';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  Box, 
+  IconButton, 
+  useMediaQuery, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemText,
+  Select,
+  MenuItem,
+  FormControl
+} from "@mui/material";
 import { decodeToken } from "../utils/decodeToken";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LockIcon from "@mui/icons-material/Lock";
 import MenuIcon from "@mui/icons-material/Menu";
+import LanguageIcon from "@mui/icons-material/Language";
 
 const Navbar = () => {
+  const { i18n } = useTranslation();
   const token = localStorage.getItem("token");
   const decodedToken = token ? decodeToken(token) : null;
   const role = decodedToken?.role;
@@ -17,6 +35,12 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
+  };
+
+  const handleLanguageChange = (event) => {
+    const newLang = event.target.value;
+    i18n.changeLanguage(newLang);
+    document.dir = newLang === 'ar' ? 'rtl' : 'ltr';
   };
 
   const toggleDrawer = (open) => (event) => {
@@ -154,6 +178,27 @@ const Navbar = () => {
     return buttons;
   };
 
+  const languageSelector = (
+    <FormControl size="small" sx={{ minWidth: 120, mx: 2 }}>
+      <Select
+        value={i18n.language}
+        onChange={handleLanguageChange}
+        sx={{ 
+          color: 'white',
+          '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+          '.MuiSvgIcon-root': { color: 'white' }
+        }}
+        IconComponent={LanguageIcon}
+      >
+        <MenuItem value="en">English</MenuItem>
+        <MenuItem value="ar">العربية</MenuItem>
+        <MenuItem value="he">עברית</MenuItem>
+      </Select>
+    </FormControl>
+  );
+
   return (
     <AppBar position="static" sx={{ bgcolor: "primary.main", boxShadow: 3 }}>
       <Toolbar>
@@ -171,6 +216,7 @@ const Navbar = () => {
 
         {isMobile ? (
           <>
+            {languageSelector}
             <IconButton color="inherit" onClick={toggleDrawer(true)}>
               <MenuIcon />
             </IconButton>
@@ -187,6 +233,7 @@ const Navbar = () => {
         ) : (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {renderButtons()}
+            {languageSelector}
           </Box>
         )}
       </Toolbar>

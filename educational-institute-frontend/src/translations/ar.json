@@ -1,0 +1,77 @@
+{
+  "superAdmin": {
+    "dashboard": {
+      "title": "لوحة تحكم المشرف الرئيسي",
+      "totalInstitutes": "إجمالي المعاهد",
+      "totalUsers": "إجمالي المستخدمين",
+      "totalBranches": "إجمالي الفروع",
+      "recentActivity": "النشاط الأخير",
+      "viewAll": "عرض الكل",
+      "noInstitutes": "لم يتم إضافة معاهد بعد.",
+      "subscriptionPeriod": "فترة الاشتراك",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "admin": "المدير",
+      "noAdmin": "لم يتم تعيين مدير.",
+      "branches": "الفروع",
+      "noAddress": "لا يوجد عنوان",
+      "noPhone": "لا يوجد رقم هاتف",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "confirmDelete": "حذف المعهد",
+      "deleteConfirmation": "هل أنت متأكد من حذف هذا المعهد؟ لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء",
+      "confirm": "حذف"
+    },
+    "instituteManagement": {
+      "title": "إدارة المعاهد",
+      "addInstitute": "إضافة معهد",
+      "editInstitute": "تعديل المعهد",
+      "deleteInstitute": "حذف المعهد",
+      "instituteName": "اسم المعهد",
+      "instituteCode": "رمز المعهد",
+      "address": "العنوان",
+      "contact": "جهة الاتصال",
+      "email": "البريد الإلكتروني",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "branchManagement": {
+      "title": "إدارة الفروع",
+      "addBranch": "إضافة فرع",
+      "editBranch": "تعديل الفرع",
+      "deleteBranch": "حذف الفرع",
+      "branchName": "اسم الفرع",
+      "branchCode": "رمز الفرع",
+      "institute": "المعهد",
+      "address": "العنوان",
+      "contact": "جهة الاتصال",
+      "status": "الحالة"
+    },
+    "userManagement": {
+      "title": "إدارة المستخدمين",
+      "addUser": "إضافة مستخدم",
+      "editUser": "تعديل المستخدم",
+      "deleteUser": "حذف المستخدم",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "lastLogin": "آخر تسجيل دخول"
+    },
+    "systemSettings": {
+      "title": "إعدادات النظام",
+      "generalSettings": "الإعدادات العامة",
+      "securitySettings": "إعدادات الأمان",
+      "notificationSettings": "إعدادات الإشعارات",
+      "save": "حفظ التغييرات"
+    },
+    "reports": {
+      "title": "تقارير المعهد",
+      "generateReport": "إنشاء تقرير",
+      "downloadReport": "تحميل التقرير",
+      "reportType": "نوع التقرير",
+      "dateRange": "النطاق الزمني"
+    }
+  }
+} 

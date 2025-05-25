@@ -1,0 +1,77 @@
+{
+  "superAdmin": {
+    "dashboard": {
+      "title": "לוח בקרה למנהל ראשי",
+      "totalInstitutes": "סה״כ מוסדות",
+      "totalUsers": "סה״כ משתמשים",
+      "totalBranches": "סה״כ סניפים",
+      "recentActivity": "פעילות אחרונה",
+      "viewAll": "הצג הכל",
+      "noInstitutes": "טרם נוספו מוסדות.",
+      "subscriptionPeriod": "תקופת מנוי",
+      "startDate": "תאריך התחלה",
+      "endDate": "תאריך סיום",
+      "admin": "מנהל",
+      "noAdmin": "לא מונה מנהל.",
+      "branches": "סניפים",
+      "noAddress": "אין כתובת",
+      "noPhone": "אין מספר טלפון",
+      "edit": "ערוך",
+      "delete": "מחק",
+      "confirmDelete": "מחק מוסד",
+      "deleteConfirmation": "האם אתה בטוח שברצונך למחוק מוסד זה? לא ניתן לבטל פעולה זו.",
+      "cancel": "ביטול",
+      "confirm": "מחק"
+    },
+    "instituteManagement": {
+      "title": "ניהול מוסדות",
+      "addInstitute": "הוסף מוסד",
+      "editInstitute": "ערוך מוסד",
+      "deleteInstitute": "מחק מוסד",
+      "instituteName": "שם המוסד",
+      "instituteCode": "קוד המוסד",
+      "address": "כתובת",
+      "contact": "איש קשר",
+      "email": "דוא״ל",
+      "status": "סטטוס",
+      "actions": "פעולות"
+    },
+    "branchManagement": {
+      "title": "ניהול סניפים",
+      "addBranch": "הוסף סניף",
+      "editBranch": "ערוך סניף",
+      "deleteBranch": "מחק סניף",
+      "branchName": "שם הסניף",
+      "branchCode": "קוד הסניף",
+      "institute": "מוסד",
+      "address": "כתובת",
+      "contact": "איש קשר",
+      "status": "סטטוס"
+    },
+    "userManagement": {
+      "title": "ניהול משתמשים",
+      "addUser": "הוסף משתמש",
+      "editUser": "ערוך משתמש",
+      "deleteUser": "מחק משתמש",
+      "username": "שם משתמש",
+      "email": "דוא״ל",
+      "role": "תפקיד",
+      "status": "סטטוס",
+      "lastLogin": "התחברות אחרונה"
+    },
+    "systemSettings": {
+      "title": "הגדרות מערכת",
+      "generalSettings": "הגדרות כלליות",
+      "securitySettings": "הגדרות אבטחה",
+      "notificationSettings": "הגדרות התראות",
+      "save": "שמור שינויים"
+    },
+    "reports": {
+      "title": "דוחות מוסד",
+      "generateReport": "צור דוח",
+      "downloadReport": "הורד דוח",
+      "reportType": "סוג דוח",
+      "dateRange": "טווח תאריכים"
+    }
+  }
+} 

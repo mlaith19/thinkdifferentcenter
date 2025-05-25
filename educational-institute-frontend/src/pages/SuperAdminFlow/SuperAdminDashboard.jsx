@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import FloatingActionButton from "../../components/FloatingActionButton";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import {
   Typography,
   Box,
@@ -33,8 +34,10 @@ import {
 } from "@mui/icons-material";
 import Navbar from "../../components/Navbar"; // Navbar component
 import AddIcon from "@mui/icons-material/Add"; // Import the AddIcon
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 
 const SuperAdminDashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [institutes, setInstitutes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,6 +113,8 @@ const SuperAdminDashboard = () => {
       <Navbar /> {/* Navbar is always displayed */}
 
       <Box sx={{ p: 4 }}>
+     
+
         {loading ? (
           <Box
             display="flex"
@@ -148,7 +153,7 @@ const SuperAdminDashboard = () => {
               >
                 <ErrorIcon style={{ fontSize: 60, color: "gray" }} />
                 <Typography variant="h6" color="textSecondary">
-                  No institutes added yet.
+                  {t('superAdmin.dashboard.noInstitutes')}
                 </Typography>
               </Box>
             ) : (
@@ -195,14 +200,14 @@ const SuperAdminDashboard = () => {
                           <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
                             <DateRangeIcon sx={{ mr: 1, color: "primary.main" }} />
                             <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                              Subscription Period
+                              {t('superAdmin.dashboard.subscriptionPeriod')}
                             </Typography>
                           </Box>
                           <Typography variant="body2" color="text.secondary">
-                            Start Date: {institute.startDate}
+                            {t('superAdmin.dashboard.startDate')}: {institute.startDate}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            End Date: {institute.endDate}
+                            {t('superAdmin.dashboard.endDate')}: {institute.endDate}
                           </Typography>
                         </Paper>
 
@@ -211,7 +216,7 @@ const SuperAdminDashboard = () => {
                           <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
                             <PersonIcon sx={{ mr: 1, color: "primary.main" }} />
                             <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                              Admin
+                              {t('superAdmin.dashboard.admin')}
                             </Typography>
                           </Box>
                           {institute.admin ? (
@@ -225,7 +230,7 @@ const SuperAdminDashboard = () => {
                             </>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              No admin assigned.
+                              {t('superAdmin.dashboard.noAdmin')}
                             </Typography>
                           )}
                         </Paper>
@@ -235,7 +240,7 @@ const SuperAdminDashboard = () => {
                           <Box display="flex" alignItems="center" sx={{ mb: 1 }}>
                             <BusinessIcon sx={{ mr: 1, color: "primary.main" }} />
                             <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                              Branches
+                              {t('superAdmin.dashboard.branches')}
                             </Typography>
                           </Box>
                           {institute.branches.map((branch) => (
@@ -244,10 +249,10 @@ const SuperAdminDashboard = () => {
                                 {branch.name}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {branch.address || "No address provided"}
+                                {branch.address || t('superAdmin.dashboard.noAddress')}
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                {branch.phone || "No phone provided"}
+                                {branch.phone || t('superAdmin.dashboard.noPhone')}
                               </Typography>
                               <Divider sx={{ my: 1 }} />
                             </Box>
@@ -257,14 +262,20 @@ const SuperAdminDashboard = () => {
 
                       {/* Edit and Delete Actions */}
                       <CardActions sx={{ justifyContent: "flex-end", p: 2 }}>
-                        <IconButton onClick={() => 
-                           
-                          handleEdit(institute.id)} color="primary">
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => handleDeleteClick(institute.id)} color="error">
-                          <DeleteIcon />
-                        </IconButton>
+                        <Button
+                          startIcon={<EditIcon />}
+                          onClick={() => handleEdit(institute.id)}
+                          color="primary"
+                        >
+                          {t('superAdmin.dashboard.edit')}
+                        </Button>
+                        <Button
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleDeleteClick(institute.id)}
+                          color="error"
+                        >
+                          {t('superAdmin.dashboard.delete')}
+                        </Button>
                       </CardActions>
                     </Card>
                   </Grid>
@@ -304,18 +315,18 @@ const SuperAdminDashboard = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Delete Institute</DialogTitle>
+        <DialogTitle id="delete-dialog-title">{t('superAdmin.dashboard.confirmDelete')}</DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete this institute? This action cannot be undone.
+            {t('superAdmin.dashboard.deleteConfirmation')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary">
-            Cancel
+            {t('superAdmin.dashboard.cancel')}
           </Button>
           <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-            Delete
+            {t('superAdmin.dashboard.confirm')}
           </Button>
         </DialogActions>
       </Dialog>
