@@ -73,6 +73,28 @@ const User = sequelize.define(
       //   msg: "Please provide a valid phone number.",
       // },
     },
+    points: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    rewards: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+      allowNull: false,
+    },
+    lastLogin: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,

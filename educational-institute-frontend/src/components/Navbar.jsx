@@ -24,7 +24,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import LanguageIcon from "@mui/icons-material/Language";
 
 const Navbar = () => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const token = localStorage.getItem("token");
   const decodedToken = token ? decodeToken(token) : null;
   const role = decodedToken?.role;
@@ -126,20 +126,26 @@ const Navbar = () => {
     
     } else if (role === "student") {
       buttons.push(
-        <Button key="students" color="inherit" component={Link} to="/students">
-          Students
+        <Button key="student-dashboard" color="inherit" component={Link} to="/student-dashboard">
+          {t('studentDashboard.title')}
         </Button>,
         <Button key="my-courses-student" color="inherit" component={Link} to="/my-courses-student">
-          My Courses
+          {t('studentDashboard.myCourses')}
         </Button>,
-        <Button key="course-materials" color="inherit" component={Link} to="/course-materials">
-          Course Materials
+        <Button key="course-schedule" color="inherit" component={Link} to="/course-schedule">
+          {t('studentDashboard.courseSchedule')}
         </Button>,
         <Button key="attendance-summary" color="inherit" component={Link} to="/attendance-summary">
-          Attendance Summary
+          {t('studentDashboard.attendance')}
         </Button>,
         <Button key="points-rewards" color="inherit" component={Link} to="/points-rewards">
-          Points & Rewards
+          {t('studentDashboard.points')}
+        </Button>,
+        <Button key="payment-slip" color="inherit" component={Link} to="/payment-slip">
+          {t('studentDashboard.payments')}
+        </Button>,
+        <Button key="course-materials" color="inherit" component={Link} to="/course-materials">
+          {t('studentDashboard.materials')}
         </Button>
       );
     } else if (role === "accountant") {

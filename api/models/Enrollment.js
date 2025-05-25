@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../assets/SQLDB/db");
 
-const Attendance = sequelize.define(
-  "Attendance",
+const Enrollment = sequelize.define(
+  "Enrollment",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -17,58 +17,61 @@ const Attendance = sequelize.define(
         key: "id",
       },
     },
-    sessionId: {
+    courseId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Sessions",
+        model: "Courses",
         key: "id",
       },
     },
     status: {
-      type: DataTypes.ENUM("present", "absent", "late", "excused"),
+      type: DataTypes.ENUM("active", "completed", "dropped"),
+      defaultValue: "active",
       allowNull: false,
-      defaultValue: "absent",
     },
-    notes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    markedBy: {
+    progress: {
       type: DataTypes.INTEGER,
+      defaultValue: 0,
       allowNull: false,
-      references: {
-        model: "Users",
-        key: "id",
-      },
     },
-    markedAt: {
+    attendanceRate: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    enrollmentDate: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
+      allowNull: false,
+    },
+    completionDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
       allowNull: false,
     },
   },
   {
     timestamps: true,
     paranoid: true,
-    tableName: "attendance",
+    tableName: "Enrollments",
   }
 );
 
 // Define associations
-Attendance.associate = (models) => {
-  Attendance.belongsTo(models.User, {
+Enrollment.associate = (models) => {
+  Enrollment.belongsTo(models.User, {
     foreignKey: "studentId",
     as: "Student",
   });
-  Attendance.belongsTo(models.Session, {
-    foreignKey: "sessionId",
-    as: "Session",
-  });
-  Attendance.belongsTo(models.User, {
-    foreignKey: "markedBy",
-    as: "Marker",
+  Enrollment.belongsTo(models.Course, {
+    foreignKey: "courseId",
+    as: "Course",
   });
 };
 
-module.exports = Attendance;
+module.exports = Enrollment; 

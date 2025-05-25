@@ -4,16 +4,22 @@ const { authenticate } = require("../middlewares/auth_JWT");
 
 const router = express.Router();
 
-// Get all students by instituteId
-router.get("/institute/:instituteId/students", authenticate, StudentController.getStudentsByInstituteId);
+// Apply authentication middleware to all routes
+router.use(authenticate);
 
-// Add a new student
-router.post("/institute/:instituteId/students", authenticate, StudentController.addStudent);
+// Student dashboard routes
+router.get("/:studentId/stats", StudentController.getStudentStats);
+router.get("/:studentId/courses", StudentController.getStudentCourses);
+router.get("/:studentId/attendance", StudentController.getStudentAttendance);
+router.get("/:studentId/points", StudentController.getStudentPoints);
+router.get("/:studentId/upcoming-sessions", StudentController.getUpcomingSessions);
+router.get("/:studentId/course-materials", StudentController.getCourseMaterials);
+router.get("/:studentId/payments", StudentController.getPaymentHistory);
 
-// Update a student
-router.put("/students/:studentId", authenticate, StudentController.updateStudent);
-
-// Delete a student
-router.delete("/students/:studentId", authenticate, StudentController.deleteStudent);
+// Institute student management routes
+router.get("/institute/:instituteId/students", StudentController.getStudentsByInstituteId);
+router.post("/institute/:instituteId/students", StudentController.addStudent);
+router.put("/:studentId", StudentController.updateStudent);
+router.delete("/:studentId", StudentController.deleteStudent);
 
 module.exports = router;
