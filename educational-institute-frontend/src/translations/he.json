@@ -196,5 +196,21 @@
     "address": "כתובת",
     "error": "שגיאה בטעינת פרטי הקורס.",
     "notFound": "הקורס לא נמצא."
+  },
+  "attendance": {
+    "title": "מעקב נוכחות",
+    "selectSession": "בחר מפגש",
+    "statistics": "סטטיסטיקת נוכחות",
+    "totalSessions": "סה\"כ מפגשים",
+    "present": "נוכח",
+    "absent": "נעדר",
+    "late": "מאחר",
+    "excused": "פטור",
+    "studentName": "שם התלמיד",
+    "status": "סטטוס",
+    "notes": "הערות",
+    "save": "שמור נוכחות",
+    "error": "שגיאה בשמירת הנוכחות",
+    "success": "הנוכחות נשמרה בהצלחה"
   }
 } 

@@ -197,4 +197,14 @@ router.get(
   CourseController.getEnrollmentsByInstitute
 );
 
+// Generate sessions for a course
+router.post(
+  "/:courseId/generate-sessions",
+  authenticate,
+  [
+    param("courseId").isInt().withMessage("Course ID must be a valid integer."),
+  ],
+  CourseController.generateSessions
+);
+
 module.exports = router;

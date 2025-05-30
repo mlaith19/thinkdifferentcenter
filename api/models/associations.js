@@ -9,6 +9,7 @@ const Expense = require("./Expense");
 const Course = require("./Course");
 const ParticipatingStudents = require("./ParticipatingStudents");
 const Session = require("./Session");
+const Attendance = require("./Attendance");
 
 // تعريف العلاقات
 User.belongsToMany(Role, { through: "UserRoles", foreignKey: "userId" });
@@ -48,4 +49,12 @@ ParticipatingStudents.belongsTo(User, { foreignKey: "studentId", as: "student" }
 Course.hasMany(Session, { foreignKey: "courseId", as: "sessions" });
 Session.belongsTo(Course, { foreignKey: "courseId", as: "course" });
 
-module.exports = { User, Role, Institute, Branch, Permission, RolePermission,Course, ParticipatingStudents, Session };
+// Add Session-Attendance associations
+Session.hasMany(Attendance, { foreignKey: "sessionId", as: "attendances" });
+Attendance.belongsTo(Session, { foreignKey: "sessionId", as: "session" });
+
+// Add User-Attendance associations
+User.hasMany(Attendance, { foreignKey: "studentId", as: "attendances" });
+Attendance.belongsTo(User, { foreignKey: "studentId", as: "student" });
+
+module.exports = { User, Role, Institute, Branch, Permission, RolePermission, Course, ParticipatingStudents, Session, Attendance };

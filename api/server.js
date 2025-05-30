@@ -11,6 +11,9 @@ const { sequelize } = require("./assets/SQLDB/db");
  
 const bcrypt = require("bcrypt");
 const seedRolesAndPermissions = require("./scripts/roleSeeder");
+const seedSuperAdmin = require("./scripts/seedSuperAdmin");
+const seedDummyData = require("./scripts/seedDummyData");
+const sessionRoutes = require('./routes/sessionRoutes');
 
 
 // Load environment variables
@@ -41,13 +44,43 @@ app.use(cors(corsOptions));
 // Body parser middleware
 app.use(bodyParser.json());
 
-// Database synchronization
+// Function to check if data is already seeded
+const isDataSeeded = async () => {
+  try {
+    const courseCount = await sequelize.models.Course.count();
+    const sessionCount = await sequelize.models.Session.count();
+    return courseCount > 0 && sessionCount > 0;
+  } catch (error) {
+    console.error("Error checking seeded data:", error);
+    return false;
+  }
+};
+
+// Function to sync database and seed data
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({    alter: true});  
+    await sequelize.sync({ force: false });
     console.log("Database tables have been synced.");
-  } catch (err) {
-    console.error("Error syncing database:", err);
+
+    // Seed roles and permissions
+    await seedRolesAndPermissions();
+    console.log("Roles and permissions seeded.");
+
+    // Seed super admin if not already seeded
+    await seedSuperAdmin();
+    console.log("Super admin account already exists.");
+
+    // Check if dummy data needs to be seeded
+    const dataSeeded = await isDataSeeded();
+    if (!dataSeeded) {
+      console.log("Seeding dummy data...");
+      await seedDummyData();
+      console.log("Dummy data seeded successfully.");
+    } else {
+      console.log("Dummy data already exists.");
+    }
+  } catch (error) {
+    console.error("Error syncing database:", error);
   }
 };
 
@@ -104,6 +137,9 @@ const initializeServer = async () => {
   const taskRoutes = require("./routes/TaskRoute");
   const notificationRoutes = require("./routes/NotificationRoute");
   const courseRoutes = require("./routes/CourseRoute"); 
+  const attendanceRoutes = require("./routes/attendance");
+  const seedRoutes = require("./routes/seedRoutes");
+
   app.use("/api/tasks", taskRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/users", userRoutes);
@@ -117,6 +153,13 @@ const initializeServer = async () => {
   app.use("/api/accountant", accountantRoutes);
   app.use("/api/crm", crmRoutes);
   app.use("/api/courses", courseRoutes);
+  app.use("/api/attendance", attendanceRoutes);
+  app.use('/api/sessions', sessionRoutes);
+  
+  // Only enable seed routes in development
+  if (process.env.NODE_ENV === "development") {
+    app.use("/api/seed", seedRoutes);
+  }
   
   app.use((req, res, next) => {
     res.status(404).json({
@@ -140,3 +183,34 @@ const initializeServer = async () => {
 initializeServer().catch((err) => {
   console.error("Failed to initialize server:", err);
 });
+/*
+
+Teacher credentials:
+Username: Danielle_Schimmel
+Email: Danielle_Schimmel@yahoo.com     
+Password: teacher123
+
+Student credentials:
+Student 1:
+Username: Caterina.Oberbrunner
+Email: Caterina_Oberbrunner@yahoo.com
+Password: student123
+Student 2:
+Username: Jane_Walsh
+Email: Jane_Walsh31@gmail.com
+Password: student123
+Student 3:
+Username: Gina.Mertz
+Email: Gina_Mertz29@gmail.com
+Password: student123
+Student 4:
+Username: Erin.Jakubowski
+Email: Erin_Jakubowski97@gmail.com
+Password: student123
+Student 5:
+Username: Buddy.Kozey
+Email: Buddy_Kozey@hotmail.com
+Password: student123
+Seeding completed
+PS E:\Educational Institute Management System\thinkdifferentcenter> 
+*/

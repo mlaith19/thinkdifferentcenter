@@ -58,24 +58,15 @@ const TeacherDashboard = () => {
       path: "/my-courses",
       description: t('teacherDashboard.myCoursesDesc')
     },
-    {
-      title: t('teacherDashboard.courseSchedule'),
-      icon: <ScheduleIcon sx={{ fontSize: 40 }} />,
-      path: "/course-schedule",
-      description: t('teacherDashboard.courseScheduleDesc')
-    },
+ 
     {
       title: t('teacherDashboard.attendanceTracking'),
       icon: <GroupIcon sx={{ fontSize: 40 }} />,
       path: "/attendance-tracking",
       description: t('teacherDashboard.attendanceTrackingDesc')
     },
-    {
-      title: t('teacherDashboard.studentProgress'),
-      icon: <AssessmentIcon sx={{ fontSize: 40 }} />,
-      path: "/student-progress",
-      description: t('teacherDashboard.studentProgressDesc')
-    },
+ 
+ 
     {
       title: t('teacherDashboard.materialsUpload'),
       icon: <CloudUploadIcon sx={{ fontSize: 40 }} />,

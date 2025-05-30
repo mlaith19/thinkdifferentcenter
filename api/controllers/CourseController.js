@@ -5,6 +5,9 @@ const Branch = require("../models/Branch");
 const { handleError } = require("../utils/errorHandler");
 const Sequelize = require("sequelize");
 const { sequelize } = require("../assets/SQLDB/db");
+const Session = require("../models/Session");
+const { addDays, addWeeks, format, parseISO, isWithinInterval } = require('date-fns');
+
 // إنشاء دورة جديدة
 const createCourse = async (req, res) => {
   const {
@@ -96,13 +99,19 @@ const getCoursesByInstituteId = async (req, res) => {
           as: "enrollments",
           attributes: [], // We only need the count, no need to fetch individual enrollments
         },
+        {
+          model: Session,
+          as: "sessions",
+          attributes: ['id', 'date', 'startTime', 'endTime', 'status'],
+          order: [['date', 'ASC'], ['startTime', 'ASC']]
+        }
       ],
       attributes: {
         include: [
           [sequelize.fn("COUNT", sequelize.col("enrollments.id")), "studentCount"],
         ],
       },
-      group: ["Course.id"], // Group by course to ensure count works correctly
+      group: ["Course.id", "sessions.id"], // Group by course and sessions to ensure count works correctly
     });
 
     if (!courses.length) {
@@ -113,10 +122,26 @@ const getCoursesByInstituteId = async (req, res) => {
       });
     }
 
+    // Format the response to handle the grouped data
+    const formattedCourses = courses.reduce((acc, course) => {
+      const existingCourse = acc.find(c => c.id === course.id);
+      if (existingCourse) {
+        if (course.sessions) {
+          existingCourse.sessions.push(course.sessions);
+        }
+      } else {
+        acc.push({
+          ...course.toJSON(),
+          sessions: course.sessions ? [course.sessions] : []
+        });
+      }
+      return acc;
+    }, []);
+
     res.status(200).json({
       succeed: true,
       message: "Courses fetched successfully.",
-      data: courses,
+      data: formattedCourses,
     });
   } catch (error) {
     console.error("Database Error:", error);
@@ -191,6 +216,12 @@ const getCourseById = async (req, res) => {
           model: Branch,
           as: "branch",
           attributes: ['id', 'name', 'address', 'phone']
+        },
+        {
+          model: Session,
+          as: "sessions",
+          attributes: ['id', 'date', 'startTime', 'endTime', 'status'],
+          order: [['date', 'ASC'], ['startTime', 'ASC']]
         }
       ],
       attributes: {
@@ -203,7 +234,8 @@ const getCourseById = async (req, res) => {
         "enrollments.id",
         "enrollments->student.id",
         "teacher.id",
-        "branch.id"
+        "branch.id",
+        "sessions.id"
       ]
     });
 
@@ -235,6 +267,7 @@ const getCourseById = async (req, res) => {
       studentCount: course.getDataValue('studentCount'),
       teacher: course.teacher,
       branch: course.branch,
+      sessions: course.sessions || [],
       enrolledStudents: course.enrollments.map(enrollment => ({
         enrollmentId: enrollment.id,
         enrollmentDate: enrollment.enrollmentDate,
@@ -548,12 +581,113 @@ const getEnrollmentsByInstitute = async (req, res) => {
   }
 };
 
+// Generate sessions for a course
+const generateSessions = async (req, res) => {
+  const { courseId } = req.params;
+
+  try {
+    const course = await Course.findByPk(courseId);
+    if (!course) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Course not found.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    // Parse schedule days
+    const scheduleDays = typeof course.scheduleDays === 'string' 
+      ? JSON.parse(course.scheduleDays) 
+      : course.scheduleDays;
+
+    if (!scheduleDays || !Array.isArray(scheduleDays) || scheduleDays.length === 0) {
+      return res.status(400).json({
+        succeed: false,
+        message: "Course has no schedule days defined.",
+        data: null,
+        errorDetails: null,
+      });
+    }
+
+    // Get existing sessions
+    const existingSessions = await Session.findAll({
+      where: { courseId },
+      attributes: ['date', 'startTime', 'endTime']
+    });
+
+    // Convert schedule days to numbers (0 = Sunday, 1 = Monday, etc.)
+    const dayMap = {
+      'sunday': 0, 'monday': 1, 'tuesday': 2, 'wednesday': 3,
+      'thursday': 4, 'friday': 5, 'saturday': 6
+    };
+    const scheduleDayNumbers = scheduleDays.map(day => 
+      dayMap[day.toLowerCase()]
+    );
+
+    // Generate sessions
+    const startDate = new Date(course.registrationStartDate);
+    const endDate = new Date(course.registrationEndDate);
+    const sessions = [];
+    let currentDate = startDate;
+
+    while (currentDate <= endDate && sessions.length < course.numberOfSessions) {
+      const dayOfWeek = currentDate.getDay();
+      
+      if (scheduleDayNumbers.includes(dayOfWeek)) {
+        // Check if session already exists for this date
+        const sessionExists = existingSessions.some(session => 
+          format(new Date(session.date), 'yyyy-MM-dd') === format(currentDate, 'yyyy-MM-dd')
+        );
+
+        if (!sessionExists) {
+          sessions.push({
+            date: currentDate,
+            startTime: '09:00:00', // Default start time
+            endTime: '10:30:00',   // Default end time
+            courseId: course.id,
+            teacherId: course.teacherId,
+            status: 'scheduled'
+          });
+        }
+      }
+      
+      currentDate = addDays(currentDate, 1);
+    }
+
+    // Create sessions in database
+    if (sessions.length > 0) {
+      await Session.bulkCreate(sessions);
+    }
+
+    res.status(200).json({
+      succeed: true,
+      message: `Generated ${sessions.length} new sessions for the course.`,
+      data: sessions,
+      errorDetails: null,
+    });
+  } catch (error) {
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails,
+    });
+  }
+};
+
 module.exports = {
   createCourse,
   getAllCourses,
   getCourseById,
   updateCourse,
-  deleteCourse,getCoursesByInstituteId ,joinCourse,
+  deleteCourse,
+  getCoursesByInstituteId,
+  joinCourse,
   getStudentsByCourse,
-  getCoursesByStudent,updateEnrollmentStatus,getEnrollmentsByInstitute
+  getCoursesByStudent,
+  updateEnrollmentStatus,
+  getEnrollmentsByInstitute,
+  generateSessions
 };

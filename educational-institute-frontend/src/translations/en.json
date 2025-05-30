@@ -197,5 +197,21 @@
     "address": "Address",
     "error": "Failed to fetch course details.",
     "notFound": "Course not found."
+  },
+  "attendance": {
+    "title": "Attendance Tracking",
+    "selectSession": "Select Session",
+    "statistics": "Attendance Statistics",
+    "totalSessions": "Total Sessions",
+    "present": "Present",
+    "absent": "Absent",
+    "late": "Late",
+    "excused": "Excused",
+    "studentName": "Student Name",
+    "status": "Status",
+    "notes": "Notes",
+    "save": "Save Attendance",
+    "error": "Failed to save attendance",
+    "success": "Attendance saved successfully"
   }
 } 

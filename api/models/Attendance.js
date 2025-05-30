@@ -59,15 +59,15 @@ const Attendance = sequelize.define(
 Attendance.associate = (models) => {
   Attendance.belongsTo(models.User, {
     foreignKey: "studentId",
-    as: "Student",
+    as: "student",
   });
   Attendance.belongsTo(models.Session, {
     foreignKey: "sessionId",
-    as: "Session",
+    as: "session",
   });
   Attendance.belongsTo(models.User, {
     foreignKey: "markedBy",
-    as: "Marker",
+    as: "marker",
   });
 };
 
