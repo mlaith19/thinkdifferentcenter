@@ -54,7 +54,13 @@ const StudentDashboard = () => {
     try {
       const response = await api.get(`/student/${studentId}/stats`);
       if (response.data.succeed) {
-        setStats(response.data.data);
+        const data = response.data.data;
+        setStats({
+          totalCourses: data.totalCourses || 0,
+          totalPoints: data.totalPoints || 0,
+          attendanceRate: data.attendanceRate || 0,
+          upcomingSessions: data.upcomingSessions?.length || 0,
+        });
         setError("");
       } else {
         setError(response.data.message || "Failed to fetch student statistics.");

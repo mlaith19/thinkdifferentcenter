@@ -166,7 +166,7 @@
     "status": "Status",
     "actions": "Actions",
     "progress": "Progress",
-    "attendance": "Attendance"
+    "availableCourses": "Available Courses"
   },
   "myCoursesStudent": {
     "title": "My Courses",
@@ -213,5 +213,53 @@
     "save": "Save Attendance",
     "error": "Failed to save attendance",
     "success": "Attendance saved successfully"
+  },
+  "availableCourses": {
+    "title": "Available Courses",
+    "searchPlaceholder": "Search courses...",
+    "noCourses": "No courses available at the moment.",
+    "enroll": "Enroll",
+    "details": "Details",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "pointsRewards": {
+    "title": "Points & Rewards",
+    "totalPoints": "Total Points",
+    "availableRewards": "Available Rewards",
+    "redeem": "Redeem",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "attendanceSummary": {
+    "title": "Attendance Summary",
+    "totalSessions": "Total Sessions",
+    "present": "Present",
+    "absent": "Absent",
+    "late": "Late",
+    "excused": "Excused",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "courseMaterials": {
+    "title": "Course Materials",
+    "noMaterials": "No materials available at the moment.",
+    "download": "Download",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "paymentSlip": {
+    "title": "Payment Slip",
+    "noPayments": "No payments available at the moment.",
+    "download": "Download",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "courseEnrollment": {
+    "title": "Course Enrollment",
+    "enroll": "Enroll",
+    "cancel": "Cancel",
+    "status": "Status",
+    "actions": "Actions"
   }
 } 

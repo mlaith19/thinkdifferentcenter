@@ -122,15 +122,15 @@ const AttendanceTracking = () => {
       // Get attendance records
       const attendanceResponse = await api.get(`/attendance/session/${sessionId}`);
       setAttendance(attendanceResponse.data.data || []);
-    } catch (error) {
+      } catch (error) {
       setError(error.response?.data?.message || "Failed to fetch attendance data");
       console.error("Error fetching attendance:", error);
       // Clear attendance data on error
       setAttendance([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleAttendanceChange = (studentId, status) => {
     setAttendance((prev) =>
@@ -236,8 +236,8 @@ const AttendanceTracking = () => {
             textAlign: isMobile ? 'center' : 'left'
           }}
         >
-          Attendance Tracking
-        </Typography>
+        Attendance Tracking
+      </Typography>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
@@ -391,17 +391,17 @@ const AttendanceTracking = () => {
                         No students enrolled in this session.
                       </Alert>
                     ) : (
-                      <TableContainer>
+        <TableContainer>
                         <Table size={isMobile ? "small" : "medium"}>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>Student Name</TableCell>
+            <TableHead>
+              <TableRow>
+                <TableCell>Student Name</TableCell>
                               <TableCell>Status</TableCell>
                               <TableCell>Notes</TableCell>
                               <TableCell>Last Updated</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
+              </TableRow>
+            </TableHead>
+            <TableBody>
                             {attendance.map((record) => (
                               <TableRow key={record.studentId}>
                                 <TableCell>{record.studentName}</TableCell>
@@ -447,15 +447,15 @@ const AttendanceTracking = () => {
                                     </Select>
                                   </FormControl>
                                 </TableCell>
-                                <TableCell>
+                  <TableCell>
                                   <TextField
                                     size="small"
                                     value={record.notes || ""}
                                     onChange={(e) => handleNotesChange(record.studentId, e.target.value)}
                                     placeholder="Add notes..."
                                     fullWidth
-                                  />
-                                </TableCell>
+                    />
+                  </TableCell>
                                 <TableCell>
                                   {record.markedAt ? (
                                     <Tooltip title={`Marked by: ${record.markedBy}`}>
@@ -469,17 +469,17 @@ const AttendanceTracking = () => {
                                     </Typography>
                                   )}
                                 </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
                     )}
                   </Paper>
                 )}
               </Grid>
             </Grid>
-          </Box>
+        </Box>
         )}
 
         <Snackbar
@@ -494,8 +494,8 @@ const AttendanceTracking = () => {
             sx={{ width: '100%' }}
           >
             {snackbar.message}
-          </Alert>
-        </Snackbar>
+        </Alert>
+      </Snackbar>
 
         <Dialog
           open={confirmDialog.open}

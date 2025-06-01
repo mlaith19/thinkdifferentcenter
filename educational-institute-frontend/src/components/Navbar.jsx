@@ -132,6 +132,9 @@ const Navbar = () => {
         <Button key="my-courses-student" color="inherit" component={Link} to="/my-courses-student">
           {t('studentDashboard.myCourses')}
         </Button>,
+        <Button key="available-courses" color="inherit" component={Link} to="/student/available-courses">
+          {t('studentDashboard.availableCourses')}
+        </Button>,
         <Button key="course-schedule" color="inherit" component={Link} to="/course-schedule">
           {t('studentDashboard.courseSchedule')}
         </Button>,

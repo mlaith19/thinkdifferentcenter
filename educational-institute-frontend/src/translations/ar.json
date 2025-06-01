@@ -111,7 +111,9 @@
       "confirm": "تأكيد",
       "delete": "حذف",
       "edit": "تعديل",
-      "view": "عرض"
+      "view": "عرض",
+      "viewDetails": "عرض التفاصيل",
+      "close": "إغلاق"
     },
     "confirm": {
       "title": "تأكيد الإجراء",
@@ -161,7 +163,16 @@
     "nextSession": "الجلسة القادمة",
     "status": "الحالة",
     "actions": "الإجراءات",
-    "progress": "التقدم"
+    "progress": "التقدم",
+    "availableCourses": "الدورات المتاحة",
+    "teacher": "المعلم",
+    "totalSessions": "إجمالي الجلسات",
+    "complete": "مكتمل",
+    "enrollmentDate": "تاريخ التسجيل",
+    "browseCourses": "تصفح الدورات",
+    "searchPlaceholder": "البحث عن الدورات...",
+    "courseMaterials": "مواد الدورة",
+    "noMaterials": "لا توجد مواد متاحة"
   },
   "myCoursesStudent": {
     "title": "دوراتي",
@@ -208,5 +219,53 @@
     "save": "حفظ الحضور",
     "error": "فشل في حفظ الحضور",
     "success": "تم حفظ الحضور بنجاح"
+  },
+  "availableCourses": {
+    "title": "الدورات المتاحة",
+    "searchPlaceholder": "البحث عن الدورات...",
+    "noCourses": "لا توجد دورات متاحة حاليًا.",
+    "enroll": "سجل",
+    "details": "التفاصيل",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "pointsRewards": {
+    "title": "النقاط والمكافآت",
+    "totalPoints": "إجمالي النقاط",
+    "availableRewards": "المكافآت المتاحة",
+    "redeem": "استبدال",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "attendanceSummary": {
+    "title": "ملخص الحضور",
+    "totalSessions": "إجمالي الجلسات",
+    "present": "حاضر",
+    "absent": "غائب",
+    "late": "متأخر",
+    "excused": "معذور",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "courseMaterials": {
+    "title": "مواد الدورة",
+    "noMaterials": "لا توجد مواد متاحة حاليًا.",
+    "download": "تحميل",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "paymentSlip": {
+    "title": "إيصال الدفع",
+    "noPayments": "لا توجد مدفوعات متاحة حاليًا.",
+    "download": "تحميل",
+    "status": "الحالة",
+    "actions": "الإجراءات"
+  },
+  "courseEnrollment": {
+    "title": "تسجيل الدورة",
+    "enroll": "سجل",
+    "cancel": "إلغاء",
+    "status": "الحالة",
+    "actions": "الإجراءات"
   }
 } 

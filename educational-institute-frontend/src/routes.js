@@ -58,6 +58,7 @@ import DiscountManagement from "./pages/AccountantFlow/DiscountManagement.jsx";
 import CourseDetails from "./pages/TeacherFlow/CourseDetails";
 import StudentDashboard from "./pages/StudentFlow/StudentDashboard";
 import StudentCourseDetails from "./pages/StudentFlow/CourseDetails";
+import AvailableCourses from "./pages/StudentFlow/AvailableCourses";
 
 export const AppRoutes = () => {
   return (
@@ -469,6 +470,14 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/student/available-courses"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <AvailableCourses />
           </ProtectedRoute>
         }
       />

@@ -21,5 +21,5 @@ router.get("/institute/:instituteId/students", StudentController.getStudentsByIn
 router.post("/institute/:instituteId/students", StudentController.addStudent);
 router.put("/:studentId", StudentController.updateStudent);
 router.delete("/:studentId", StudentController.deleteStudent);
-
+router.get('/courses/:courseId/attendance-summary',     StudentController.getAttendanceSummary); 
 module.exports = router;

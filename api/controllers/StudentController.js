@@ -117,7 +117,13 @@ const getStudentCourses = async (req, res) => {
               }
             },
             required: false
-          }
+          },
+          {
+            model: User,
+            as: "teacher",
+            attributes: ['id', 'fullName', 'email']
+          },
+      
         ]
       }]
     });
@@ -127,9 +133,21 @@ const getStudentCourses = async (req, res) => {
       name: course.Course.name,
       description: course.Course.description,
       status: course.status,
+      enrollmentStatus: course.status,
       progress: course.progress || 0,
       nextSession: course.Course.sessions?.[0]?.startTime || null,
-      attendanceRate: course.attendanceRate || 0
+      attendanceRate: course.attendanceRate || 0,
+      teacher: course.Course.teacher,
+      materials: course.Course.materials,
+      totalSessions: course.Course.sessions?.length || 0,
+      totalMaterials: course.Course.materials?.length || 0,
+      startDate: course.Course.startDate,
+      endDate: course.Course.endDate,
+      schedule: course.Course.schedule,
+      location: course.Course.location,
+      maxStudents: course.Course.maxStudents,
+      currentStudents: course.Course.currentStudents,
+      enrollmentDate: course.createdAt
     }));
 
     res.status(200).json({
@@ -467,6 +485,116 @@ const deleteStudent = async (req, res) => {
   }
 };
 
+const getAttendanceSummary = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const studentId = req.user.userId;
+
+    if (!studentId) {
+      return res.status(401).json({
+        succeed: false,
+        message: 'Student ID not found in request',
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Get course details with proper associations
+    const course = await Course.findByPk(courseId, {
+      include: [
+        {
+          model: User,
+          as: 'teacher',
+          where: { role: 'teacher' },
+          attributes: ['id', 'fullName', 'email']
+        },
+        {
+          model: Branch,
+          as: 'branch',
+          attributes: ['id', 'name', 'address']
+        }
+      ]
+    });
+
+    if (!course) {
+      return res.status(404).json({ 
+        succeed: false,
+        message: 'Course not found',
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Get all sessions for the course with attendance
+    const sessions = await Session.findAll({
+      where: { courseId },
+      order: [['date', 'ASC']],
+      include: [
+        {
+          model: Attendance,
+          as: 'attendances',
+          where: { studentId },
+          required: false,
+          attributes: ['status', 'notes']
+        }
+      ]
+    });
+
+    // Calculate attendance statistics
+    const totalSessions = sessions.length;
+    const attendanceStats = sessions.reduce((acc, session) => {
+      const status = session.attendances[0]?.status || 'absent';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    const response = {
+      course: {
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        teacher: course.teacher,
+        branch: course.branch,
+        startDate: course.registrationStartDate,
+        endDate: course.registrationEndDate
+      },
+      attendance: {
+        totalSessions,
+        statistics: {
+          present: attendanceStats.present || 0,
+          absent: attendanceStats.absent || 0,
+          late: attendanceStats.late || 0,
+          excused: attendanceStats.excused || 0
+        },
+        sessions: sessions.map(session => ({
+          id: session.id,
+          date: session.date,
+          startTime: session.startTime,
+          endTime: session.endTime,
+          status: session.attendances[0]?.status || 'absent',
+          notes: session.attendances[0]?.notes || null
+        }))
+      }
+    };
+
+    res.json({
+      succeed: true,
+      message: "Attendance summary fetched successfully",
+      data: response,
+      errorDetails: null
+    });
+  } catch (error) {
+    console.error('Error in getAttendanceSummary:', error);
+    const { statusCode, errorMessage, errorDetails } = handleError(error);
+    res.status(statusCode).json({
+      succeed: false,
+      message: errorMessage,
+      data: null,
+      errorDetails
+    });
+  }
+};
+
 module.exports = {
   getStudentStats,
   getStudentCourses,
@@ -478,5 +606,6 @@ module.exports = {
   getStudentsByInstituteId,
   addStudent,
   updateStudent,
-  deleteStudent
+  deleteStudent,
+  getAttendanceSummary
 };

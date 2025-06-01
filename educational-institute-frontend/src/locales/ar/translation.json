@@ -1,0 +1,52 @@
+{
+  "studentDashboard": {
+    "title": "لوحة تحكم الطالب",
+    "myCourses": "دوراتي",
+    "myCoursesDesc": "عرض وإدارة الدورات المسجلة",
+    "courseSchedule": "جدول الدورات",
+    "courseScheduleDesc": "تحقق من الجلسات القادمة والجدول",
+    "attendance": "الحضور",
+    "attendanceDesc": "تتبع حضورك وتقدمك",
+    "points": "النقاط والمكافآت",
+    "pointsDesc": "عرض النقاط والمكافآت المكتسبة",
+    "payments": "المدفوعات",
+    "paymentsDesc": "عرض سجل المدفوعات والفواتير",
+    "materials": "مواد الدورة",
+    "materialsDesc": "الوصول إلى مواد الدورة والموارد",
+    "totalCourses": "إجمالي الدورات",
+    "totalPoints": "إجمالي النقاط",
+    "attendanceRate": "معدل الحضور",
+    "upcomingSessions": "الجلسات القادمة",
+    "courseName": "اسم الدورة",
+    "nextSession": "الجلسة القادمة",
+    "status": "الحالة",
+    "noCourses": "لم تقم بالتسجيل في أي دورات بعد",
+    "noCoursesFound": "لا توجد دورات تطابق معايير البحث",
+    "browseCourses": "تصفح الدورات المتاحة",
+    "searchPlaceholder": "البحث عن الدورات بالاسم أو الوصف أو المعلم...",
+    "progress": "التقدم",
+    "complete": "مكتمل",
+    "enrollmentDate": "تاريخ التسجيل",
+    "teacher": "المعلم",
+    "totalSessions": "إجمالي الجلسات",
+    "materials": "المواد",
+    "courseMaterials": "مواد الدورة",
+    "noMaterials": "لا توجد مواد متاحة لهذه الدورة بعد",
+    "download": "تحميل"
+  },
+  "common": {
+    "actions": {
+      "view": "عرض",
+      "viewDetails": "عرض التفاصيل",
+      "close": "إغلاق",
+      "download": "تحميل",
+      "browse": "تصفح"
+    },
+    "status": {
+      "active": "نشط",
+      "completed": "مكتمل",
+      "pending": "قيد الانتظار",
+      "dropped": "ملغي"
+    }
+  }
+} 

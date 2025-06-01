@@ -1,0 +1,52 @@
+{
+  "studentDashboard": {
+    "title": "Student Dashboard",
+    "myCourses": "My Courses",
+    "myCoursesDesc": "View and manage your enrolled courses",
+    "courseSchedule": "Course Schedule",
+    "courseScheduleDesc": "Check your upcoming sessions and schedule",
+    "attendance": "Attendance",
+    "attendanceDesc": "Track your attendance and progress",
+    "points": "Points & Rewards",
+    "pointsDesc": "View your earned points and rewards",
+    "payments": "Payments",
+    "paymentsDesc": "View your payment history and invoices",
+    "materials": "Course Materials",
+    "materialsDesc": "Access your course materials and resources",
+    "totalCourses": "Total Courses",
+    "totalPoints": "Total Points",
+    "attendanceRate": "Attendance Rate",
+    "upcomingSessions": "Upcoming Sessions",
+    "courseName": "Course Name",
+    "nextSession": "Next Session",
+    "status": "Status",
+    "noCourses": "You are not enrolled in any courses yet",
+    "noCoursesFound": "No courses match your search criteria",
+    "browseCourses": "Browse Available Courses",
+    "searchPlaceholder": "Search courses by name, description, or teacher...",
+    "progress": "Progress",
+    "complete": "Complete",
+    "enrollmentDate": "Enrollment Date",
+    "teacher": "Teacher",
+    "totalSessions": "Total Sessions",
+    "materials": "Materials",
+    "courseMaterials": "Course Materials",
+    "noMaterials": "No materials available for this course yet",
+    "download": "Download"
+  },
+  "common": {
+    "actions": {
+      "view": "View",
+      "viewDetails": "View Details",
+      "close": "Close",
+      "download": "Download",
+      "browse": "Browse"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "pending": "Pending",
+      "dropped": "Dropped"
+    }
+  }
+} 

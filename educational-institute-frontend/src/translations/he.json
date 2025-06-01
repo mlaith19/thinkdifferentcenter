@@ -111,7 +111,9 @@
       "confirm": "אשר",
       "delete": "מחק",
       "edit": "ערוך",
-      "view": "הצג"
+      "view": "הצג",
+      "viewDetails": "הצג פרטים",
+      "close": "סגור"
     },
     "confirm": {
       "title": "אשר פעולה",
@@ -165,7 +167,16 @@
     "nextSession": "שיעור הבא",
     "status": "סטטוס",
     "actions": "פעולות",
-    "progress": "התקדמות"
+    "progress": "התקדמות",
+    "availableCourses": "קורסים זמינים",
+    "teacher": "מורה",
+    "totalSessions": "סה״כ שיעורים",
+    "complete": "הושלם",
+    "enrollmentDate": "תאריך הרשמה",
+    "browseCourses": "עיון בקורסים",
+    "searchPlaceholder": "חיפוש קורסים...",
+    "courseMaterials": "חומרי קורס",
+    "noMaterials": "אין חומרים זמינים"
   },
   "myCoursesStudent": {
     "title": "הקורסים שלי",
@@ -212,5 +223,53 @@
     "save": "שמור נוכחות",
     "error": "שגיאה בשמירת הנוכחות",
     "success": "הנוכחות נשמרה בהצלחה"
+  },
+  "availableCourses": {
+    "title": "קורסים זמינים",
+    "searchPlaceholder": "חיפוש קורסים...",
+    "noCourses": "אין קורסים זמינים כרגע.",
+    "enroll": "הירשם",
+    "details": "פרטים",
+    "status": "סטטוס",
+    "actions": "פעולות"
+  },
+  "pointsRewards": {
+    "title": "נקודות ופרסים",
+    "totalPoints": "סה״כ נקודות",
+    "availableRewards": "פרסים זמינים",
+    "redeem": "מימוש",
+    "status": "סטטוס",
+    "actions": "פעולות"
+  },
+  "attendanceSummary": {
+    "title": "סיכום נוכחות",
+    "totalSessions": "סה״כ מפגשים",
+    "present": "נוכח",
+    "absent": "נעדר",
+    "late": "מאחר",
+    "excused": "פטור",
+    "status": "סטטוס",
+    "actions": "פעולות"
+  },
+  "courseMaterials": {
+    "title": "חומרי קורס",
+    "noMaterials": "אין חומרים זמינים כרגע.",
+    "download": "הורד",
+    "status": "סטטוס",
+    "actions": "פעולות"
+  },
+  "paymentSlip": {
+    "title": "שובר תשלום",
+    "noPayments": "אין תשלומים זמינים כרגע.",
+    "download": "הורד",
+    "status": "סטטוס",
+    "actions": "פעולות"
+  },
+  "courseEnrollment": {
+    "title": "הרשמה לקורס",
+    "enroll": "הירשם",
+    "cancel": "ביטול",
+    "status": "סטטוס",
+    "actions": "פעולות"
   }
 } 
