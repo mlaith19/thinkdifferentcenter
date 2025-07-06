@@ -59,61 +59,28 @@ const isDataSeeded = async () => {
 // Function to sync database and seed data
 const syncDatabase = async () => {
   try {
-    await sequelize.sync({ force: false });
+    // Force sync to recreate all tables
+    await sequelize.sync({ force: true });
     console.log("Database tables have been synced.");
 
-    // Seed roles and permissions
+    // Seed roles and permissions first
     await seedRolesAndPermissions();
     console.log("Roles and permissions seeded.");
 
     // Seed super admin if not already seeded
     await seedSuperAdmin();
-    console.log("Super admin account already exists.");
+    console.log("Super admin account created successfully");
 
-    // Check if dummy data needs to be seeded
-    const dataSeeded = await isDataSeeded();
-    if (!dataSeeded) {
-      console.log("Seeding dummy data...");
-      await seedDummyData();
-      console.log("Dummy data seeded successfully.");
-    } else {
-      console.log("Dummy data already exists.");
-    }
+    // Seed dummy data
+    console.log("Seeding dummy data...");
+    // await seedDummyData();
+    console.log("Dummy data seeded successfully.");
   } catch (error) {
     console.error("Error syncing database:", error);
   }
 };
 
-//    Create super admin account
-const createSuperAdmin = async () => {
-  try {
-    const superAdminEmail = "super@admin.com";
-
-    // Check if a super admin already exists
-    const existingAdmin = await User.findOne({ where: { email: superAdminEmail } });
-
-    if (existingAdmin) {
-      console.log("Super admin account already exists.");
-      return;
-    }
-
-    // Hash the password for security
-    const hashedPassword = await bcrypt.hash("Admin@123456", 10);
-
-    // Create the super admin account
-    await User.create({
-      username: "super admin",
-      email: superAdminEmail,
-      password: hashedPassword,
-      fullName: "Super Admin",
-      role: "super_admin", // Directly assign the role
-    });
-
-    console.log("Super admin account created successfully.");
-  } catch (error) {
-    console.error("Error creating super admin account:", error);
-  }
-};
+ 
 
 
 // Initialize the server
@@ -125,7 +92,7 @@ const initializeServer = async () => {
   await seedRolesAndPermissions();
 
   // Create super admin account
-  await createSuperAdmin();
+ 
 
   // Routes
   const userRoutes = require("./routes/userRoutes");

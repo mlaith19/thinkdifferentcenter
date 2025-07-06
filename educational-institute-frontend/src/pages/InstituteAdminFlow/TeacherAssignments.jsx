@@ -42,7 +42,8 @@ const TeacherAssignments = () => {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/courses");
+      const response = await api.get("/courses", { params: { instituteId } });
+
       setAssignments(response.data.data);
     } catch (error) {
       setSnackbarMessage("Failed to fetch courses.");

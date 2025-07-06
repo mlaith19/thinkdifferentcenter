@@ -4,15 +4,25 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const Session = require('../models/Session');
 const Branch = require('../models/Branch');
+const Institute = require('../models/Institute');
 
 const seedDummyData = async () => {
   try {
+    // Create a dummy institute first
+    const institute = await Institute.create({
+      name: 'Test Institute',
+      email: 'test@institute.com',
+      password: await bcrypt.hash('institute123', 10),
+      licenseKey: 'TEST-LICENSE-KEY-123',
+      status: 'active'
+    });
+
     // Create a dummy branch
     const branch = await Branch.create({
       name: 'Main Branch',
       address: '123 Main St',
       phone: '1234567890',
-      instituteId: 1
+      instituteId: institute.id
     });
 
     // Create a dummy teacher
@@ -22,7 +32,7 @@ const seedDummyData = async () => {
       password: await bcrypt.hash('password123', 10),
       phone: '1234567890',
       role: 'teacher',
-      instituteId: 1,
+      instituteId: institute.id,
       branchId: branch.id
     });
 
@@ -40,7 +50,7 @@ const seedDummyData = async () => {
       scheduleDays: JSON.stringify(['monday', 'wednesday']),
       autoGenerateSchedule: true,
       status: 'active',
-      instituteId: 1,
+      instituteId: institute.id,
       branchId: branch.id,
       teacherId: teacher.id,
       teacherName: teacher.fullName

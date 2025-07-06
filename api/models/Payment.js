@@ -9,6 +9,22 @@ const Payment = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    instituteId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Institutes",
+        key: "id",
+      },
+    },
+    branchId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Branches",
+        key: "id",
+      },
+    },
     studentId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -38,6 +54,14 @@ const Payment = sequelize.define(
     paymentPlanId: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    recordedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Users",
+        key: "id",
+      },
     },
   },
   {

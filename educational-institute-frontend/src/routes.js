@@ -59,6 +59,10 @@ import CourseDetails from "./pages/TeacherFlow/CourseDetails";
 import StudentDashboard from "./pages/StudentFlow/StudentDashboard";
 import StudentCourseDetails from "./pages/StudentFlow/CourseDetails";
 import AvailableCourses from "./pages/StudentFlow/AvailableCourses";
+import AccountantDashboard from "./pages/AccountantFlow/AccountantDashboard";
+import PaymentsManagement from "./pages/AccountantFlow/PaymentsManagement";
+import CashFlowManagement from "./pages/AccountantFlow/CashFlowManagement";
+import DiscountsManagement from "./pages/AccountantFlow/DiscountsManagement";
 
 export const AppRoutes = () => {
   return (
@@ -478,6 +482,46 @@ export const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <AvailableCourses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant"
+        element={
+          <ProtectedRoute allowedRoles={["accountant", "institute_admin"]}>
+            <AccountantDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/payments"
+        element={
+          <ProtectedRoute allowedRoles={["accountant", "institute_admin"]}>
+            <PaymentsManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/expenses"
+        element={
+          <ProtectedRoute allowedRoles={["accountant", "institute_admin"]}>
+            <ExpensesManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/cash-flow"
+        element={
+          <ProtectedRoute allowedRoles={["accountant", "institute_admin"]}>
+            <CashFlowManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accountant/discounts"
+        element={
+          <ProtectedRoute allowedRoles={["accountant", "institute_admin"]}>
+            <DiscountsManagement />
           </ProtectedRoute>
         }
       />

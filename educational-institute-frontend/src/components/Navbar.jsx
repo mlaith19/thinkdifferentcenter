@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { 
@@ -15,13 +15,69 @@ import {
   ListItemText,
   Select,
   MenuItem,
-  FormControl
+  FormControl,
+  Menu,
+  InputBase,
+  Divider,
+  Collapse,
+  ListItemIcon,
+  Tooltip
 } from "@mui/material";
+import { styled, alpha } from '@mui/material/styles';
 import { decodeToken } from "../utils/decodeToken";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LockIcon from "@mui/icons-material/Lock";
 import MenuIcon from "@mui/icons-material/Menu";
 import LanguageIcon from "@mui/icons-material/Language";
+import SearchIcon from "@mui/icons-material/Search";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+
+// Styled search input
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
 
 const Navbar = () => {
   const { i18n, t } = useTranslation();
@@ -30,7 +86,11 @@ const Navbar = () => {
   const role = decodedToken?.role;
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width:600px)");
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const isTablet = useMediaQuery("(max-width:960px)");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedSection, setExpandedSection] = useState(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -50,141 +110,131 @@ const Navbar = () => {
     setDrawerOpen(open);
   };
 
-  const renderButtons = () => {
-    const buttons = [];
+  const handleMoreMenuOpen = (event) => {
+    setMoreMenuAnchor(event.currentTarget);
+  };
+
+  const handleMoreMenuClose = () => {
+    setMoreMenuAnchor(null);
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
+    // Implement search functionality here
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const getMenuItems = () => {
+    const items = [];
 
     if (role === "super_admin") {
-      buttons.push(
-        <Button key="superAdminDashboard" color="inherit" component={Link} to="/superAdminDashboard">
-          Super Admin Dashboard
-        </Button>,
-        <Button key="users" color="inherit" component={Link} to="/users">
-          Users
-        </Button>,
-        <Button key="institute-reports" color="inherit" component={Link} to="/institute-reports">
-          Institute Reports
-        </Button>,
-        <Button key="system-settings" color="inherit" component={Link} to="/system-settings">
-          System Settings
-        </Button>
+      items.push(
+        { label: "Super Admin Dashboard", path: "/superAdminDashboard" },
+        { label: "Users", path: "/users" },
+        { label: "Institute Reports", path: "/institute-reports" },
+        { label: "System Settings", path: "/system-settings" }
       );
     } else if (role === "institute_admin") {
-      buttons.push(
-        <Button key="institution-users" color="inherit" component={Link} to="/institution-users">
-          Users
-        </Button>,
-        <Button key="students" color="inherit" component={Link} to="/students">
-          Students
-        </Button>,
-        <Button key="courses" color="inherit" component={Link} to="/courses">
-          Courses
-        </Button>,
-        <Button key="reports" color="inherit" component={Link} to="/reports-management">
-          Reports
-        </Button>,
-        <Button key="payments" color="inherit" component={Link} to="/payments">
-          Payments
-        </Button>,
-        <Button key="attendances" color="inherit" component={Link} to="/attendance-management">
-          Attendances
-        </Button>,
-        <Button key="expenses" color="inherit" component={Link} to="/expenses">
-          Expenses
-        </Button>,
-        <Button key="points" color="inherit" component={Link} to="/points-management">
-          Points
-        </Button>,
-        <Button key="notifications" color="inherit" component={Link} to="/notifications">
-          Notifications
-        </Button>,
-        <Button key="enrollment-requests" color="inherit" component={Link} to="/course-enrollment-requests">
-          Enrollment Requests
-        </Button>,
-        <Button key="teacher-assignments" color="inherit" component={Link} to="/teacher-assignments">
-          Teacher Assignments
-        </Button>,
-        <Button key="financial-summary" color="inherit" component={Link} to="/financial-summary">
-          Financial Summary
-        </Button>
+      items.push(
+        { label: "Users", path: "/institution-users" },
+        { label: "Students", path: "/students" },
+        { label: "Courses", path: "/courses" },
+        { label: "Reports", path: "/reports-management" },
+        { label: "Payments", path: "/payments" },
+        { label: "Attendances", path: "/attendance-management" },
+        { label: "Expenses", path: "/expenses" },
+        { label: "Points", path: "/points-management" },
+        { label: "Notifications", path: "/notifications" },
+        { label: "Enrollment Requests", path: "/course-enrollment-requests" },
+        { label: "Teacher Assignments", path: "/teacher-assignments" },
+        { label: "Financial Summary", path: "/financial-summary" }
       );
     } else if (role === "secretary") {
-      buttons.push(
-        <Button key="students" color="inherit" component={Link} to="/students">
-          Students
-        </Button>,
-        <Button key="student-enrollment" color="inherit" component={Link} to="/student-enrollment">
-          Student Enrollment
-        </Button>,
-        <Button key="invoice-management" color="inherit" component={Link} to="/invoice-management">
-          Invoice Management
-        </Button>,
-        <Button key="attendance-reports" color="inherit" component={Link} to="/attendance-reports">
-          Attendance Reports
-        </Button>
+      items.push(
+        { label: "Students", path: "/students" },
+        { label: "Student Enrollment", path: "/student-enrollment" },
+        { label: "Invoice Management", path: "/invoice-management" },
+        { label: "Attendance Reports", path: "/attendance-reports" }
       );
-    } else if (role === "teacher") {
-    
     } else if (role === "student") {
-      buttons.push(
-        <Button key="student-dashboard" color="inherit" component={Link} to="/student-dashboard">
-          {t('studentDashboard.title')}
-        </Button>,
-        <Button key="my-courses-student" color="inherit" component={Link} to="/my-courses-student">
-          {t('studentDashboard.myCourses')}
-        </Button>,
-        <Button key="available-courses" color="inherit" component={Link} to="/student/available-courses">
-          {t('studentDashboard.availableCourses')}
-        </Button>,
-        <Button key="course-schedule" color="inherit" component={Link} to="/course-schedule">
-          {t('studentDashboard.courseSchedule')}
-        </Button>,
-        <Button key="attendance-summary" color="inherit" component={Link} to="/attendance-summary">
-          {t('studentDashboard.attendance')}
-        </Button>,
-        <Button key="points-rewards" color="inherit" component={Link} to="/points-rewards">
-          {t('studentDashboard.points')}
-        </Button>,
-        <Button key="payment-slip" color="inherit" component={Link} to="/payment-slip">
-          {t('studentDashboard.payments')}
-        </Button>,
-        <Button key="course-materials" color="inherit" component={Link} to="/course-materials">
-          {t('studentDashboard.materials')}
-        </Button>
+      items.push(
+        { label: t('studentDashboard.title'), path: "/student-dashboard" },
+        { label: t('studentDashboard.myCourses'), path: "/my-courses-student" },
+        { label: t('studentDashboard.availableCourses'), path: "/student/available-courses" },
+        { label: t('studentDashboard.courseSchedule'), path: "/course-schedule" },
+        { label: t('studentDashboard.attendance'), path: "/attendance-summary" },
+        { label: t('studentDashboard.points'), path: "/points-rewards" },
+        { label: t('studentDashboard.payments'), path: "/payment-slip" },
+        { label: t('studentDashboard.materials'), path: "/course-materials" }
       );
     } else if (role === "accountant") {
-      buttons.push(
-        <Button key="accountants" color="inherit" component={Link} to="/accountants">
-          Accountants
-        </Button>,
-        <Button key="financial-reports" color="inherit" component={Link} to="/financial-reports">
-          Financial Reports
-        </Button>,
-        <Button key="payment-tracking" color="inherit" component={Link} to="/payment-tracking">
-          Payment Tracking
-        </Button>,
-        <Button key="discount-management" color="inherit" component={Link} to="/discount-management">
-          Discount Management
-        </Button>
+      items.push(
+        { label: "Dashboard", path: "/accountant" },
+     
       );
     }
 
-    if (!token) {
-      buttons.push(
-        <Button key="login" color="inherit" component={Link} to="/login">
-          Login
-        </Button>
-      );
-    }
+    return items;
+  };
 
-    if (token) {
-      buttons.push(
-        <IconButton key="logout" color="inherit" onClick={handleLogout}>
-          <LogoutIcon />
-        </IconButton>
-      );
-    }
+  const renderMenuItems = (items, isDrawer = false) => {
+    const visibleItems = isTablet ? items.slice(0, 4) : items.slice(0, 6);
+    const moreItems = items.slice(isTablet ? 4 : 6);
 
-    return buttons;
+    return (
+      <>
+        {visibleItems.map((item, index) => (
+          <Button
+            key={index}
+            color="inherit"
+            component={Link}
+            to={item.path}
+            sx={{ 
+              minWidth: 'auto',
+              px: 1,
+              mx: 0.5,
+              whiteSpace: 'nowrap',
+              fontSize: isDrawer ? '1rem' : '0.875rem'
+            }}
+          >
+            {item.label}
+          </Button>
+        ))}
+        {moreItems.length > 0 && !isDrawer && (
+          <>
+            <IconButton
+              color="inherit"
+              onClick={handleMoreMenuOpen}
+              sx={{ ml: 1 }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              anchorEl={moreMenuAnchor}
+              open={Boolean(moreMenuAnchor)}
+              onClose={handleMoreMenuClose}
+              PaperProps={{
+                sx: { maxHeight: 400 }
+              }}
+            >
+              {moreItems.map((item, index) => (
+                <MenuItem
+                  key={index}
+                  component={Link}
+                  to={item.path}
+                  onClick={handleMoreMenuClose}
+                >
+                  {item.label}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
+      </>
+    );
   };
 
   const languageSelector = (
@@ -203,7 +253,6 @@ const Navbar = () => {
       >
         <MenuItem value="en">English</MenuItem>
         <MenuItem value="ar">العربية</MenuItem>
-        <MenuItem value="he">עברית</MenuItem>
       </Select>
     </FormControl>
   );
@@ -215,7 +264,13 @@ const Navbar = () => {
           <LockIcon sx={{ fontSize: 40, color: "white", mr: 2 }} />
           <Typography
             variant="h4"
-            sx={{ fontWeight: "bold", color: "white", fontFamily: "monospace", letterSpacing: ".3rem" }}
+            sx={{ 
+              fontWeight: "bold", 
+              color: "white", 
+              fontFamily: "monospace", 
+              letterSpacing: ".3rem",
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' }
+            }}
             component={Link}
             to="/"
           >
@@ -223,26 +278,139 @@ const Navbar = () => {
           </Typography>
         </Box>
 
+        {!isMobile && (
+          <Search>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={handleSearch}
+            />
+          </Search>
+        )}
+
         {isMobile ? (
           <>
             {languageSelector}
             <IconButton color="inherit" onClick={toggleDrawer(true)}>
               <MenuIcon />
             </IconButton>
-            <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
-              <List>
-                {renderButtons().map((button, index) => (
-                  <ListItem key={index} onClick={toggleDrawer(false)}>
-                    {button}
+            <Drawer 
+              anchor="right" 
+              open={drawerOpen} 
+              onClose={toggleDrawer(false)}
+              PaperProps={{
+                sx: { width: { xs: '100%', sm: 300 } }
+              }}
+            >
+              <List sx={{ pt: 2 }}>
+                {isMobile && (
+                  <ListItem>
+                    <Search sx={{ width: '100%' }}>
+                      <SearchIconWrapper>
+                        <SearchIcon />
+                      </SearchIconWrapper>
+                      <StyledInputBase
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={handleSearch}
+                        fullWidth
+                      />
+                    </Search>
+                  </ListItem>
+                )}
+                {getMenuItems().map((item, index) => (
+                  <ListItem 
+                    key={index} 
+                    onClick={toggleDrawer(false)}
+                    sx={{ 
+                      py: 1,
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+                    }}
+                  >
+                    <Button
+                      component={Link}
+                      to={item.path}
+                      fullWidth
+                      sx={{ 
+                        justifyContent: 'flex-start',
+                        textTransform: 'none',
+                        fontSize: '1rem'
+                      }}
+                    >
+                      {item.label}
+                    </Button>
                   </ListItem>
                 ))}
+                {token && (
+                  <>
+                    <Divider />
+                    <ListItem>
+                      <Button
+                        onClick={handleLogout}
+                        fullWidth
+                        startIcon={<LogoutIcon />}
+                        sx={{ 
+                          justifyContent: 'flex-start',
+                          textTransform: 'none',
+                          color: 'error.main'
+                        }}
+                      >
+                        Logout
+                      </Button>
+                    </ListItem>
+                  </>
+                )}
+                {role === "accountant" && (
+                  <>
+                    <ListItem button onClick={() => navigate("/accountant")}>
+                      <ListItemIcon>
+                        <DashboardIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Dashboard" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate("/accountant/payments")}>
+                      <ListItemIcon>
+                        <AttachMoneyIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Payments" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate("/accountant/expenses")}>
+                      <ListItemIcon>
+                        <ReceiptIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Expenses" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate("/accountant/cash-flow")}>
+                      <ListItemIcon>
+                        <TrendingUpIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Cash Flow" />
+                    </ListItem>
+                    <ListItem button onClick={() => navigate("/accountant/discounts")}>
+                      <ListItemIcon>
+                        <LocalOfferIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Discounts" />
+                    </ListItem>
+                  </>
+                )}
               </List>
             </Drawer>
           </>
         ) : (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            {renderButtons()}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {renderMenuItems(getMenuItems())}
             {languageSelector}
+            {token && (
+              <Tooltip title="Logout">
+                <IconButton color="inherit" onClick={handleLogout}>
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
         )}
       </Toolbar>

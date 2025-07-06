@@ -342,23 +342,51 @@ const getInstituteById = async (req, res) => {
 };
 const getBranchesByInstituteIdPath = async (req, res) => {
   try {
-    const instituteId = req.params.instituteId; // Get from URL path
+    const instituteId = req.params.instituteId;
+    
+    // Validate instituteId
+    if (!instituteId) {
+      return res.status(400).json({
+        succeed: false,
+        message: "Institute ID is required.",
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Check if institute exists
+    const institute = await Institute.findByPk(instituteId);
+    if (!institute) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Institute not found.",
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Fetch branches
     const branches = await Branch.findAll({ 
       where: { instituteId },
       attributes: ["id", "name", "address", "phone"]
     });
     
-    res.status(200).json({ branches });
+    res.status(200).json({
+      succeed: true,
+      message: "Branches fetched successfully.",
+      data: branches,
+      errorDetails: null
+    });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
     res.status(statusCode).json({
       succeed: false,
       message: errorMessage,
       data: null,
-      errorDetails,
+      errorDetails
     });
   }
-}
+};
 const updateInstitute = async (req, res) => {
   const { id } = req.params;
   

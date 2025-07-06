@@ -156,7 +156,13 @@ const getCoursesByInstituteId = async (req, res) => {
 // Get all courses
 const getAllCourses = async (req, res) => {
   try {
+    const { instituteId } = req.query;
+    
+    // Build the where clause based on instituteId
+    const whereClause = instituteId ? { instituteId } : {};
+
     const courses = await Course.findAll({
+      where: whereClause,
       include: [
         {
           model: ParticipatingStudents,
@@ -174,7 +180,9 @@ const getAllCourses = async (req, res) => {
 
     res.status(200).json({
       succeed: true,
-      message: "Courses fetched successfully.",
+      message: instituteId 
+        ? `Courses fetched successfully for institute ID ${instituteId}.`
+        : "All courses fetched successfully.",
       data: courses,
       errorDetails: null,
     });

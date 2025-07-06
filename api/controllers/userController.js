@@ -4,6 +4,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { handleError } = require("../utils/errorHandler");
 const { sendEmail } = require("../utils/mailer");
+const Institute = require("../models/Institute");
+const { decryptLicenseKey } = require("../utils/LicenseKeyService");
 // توليد التوكن
 const generateToken = (user) => {
   return jwt.sign(
@@ -62,32 +64,120 @@ const createUser = async (req, res) => {
 
 // تسجيل الدخول
 const loginUser = async (req, res) => {
+ 
   const { email, password } = req.body;
 
   try {
-    // Find the user
-    const user = await User.findOne({ where: { email } });
+    // Find user by email
+    const user = await User.findOne({ 
+      where: { email },
+      include: [
+        {
+          model: Institute,
+          as: 'adminInstitute',
+          attributes: ['id', 'name', 'licenseKey']
+        }
+      ]
+    });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      return res.status(401).json({
+        succeed: false,
+        message: "Invalid email or password.",
+        data: null,
+        errorDetails: null
+      });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials." });
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(403).json({
+        succeed: false,
+        message: "Your account is deactivated. Please contact your administrator.",
+        data: null,
+        errorDetails: null
+      });
     }
+
+    // Check if user belongs to an institute
+    if (user.instituteId) {
+      const institute = user.adminInstitute;
+      if (!institute) {
+        return res.status(403).json({
+          succeed: false,
+          message: "Your institute account is not found. Please contact support.",
+          data: null,
+          errorDetails: null
+        });
+      }
+
+      // Decrypt and validate license key
+      try {
+        const decryptedLicenseKey = decryptLicenseKey(institute.licenseKey);
+        const [startDateISO, endDateISO] = decryptedLicenseKey.split("||").slice(0, 2);
+        const endDate = new Date(endDateISO);
+        const currentDate = new Date();
+
+        if (currentDate > endDate) {
+          return res.status(403).json({
+            succeed: false,
+            message: "Your institute's license has expired. Please renew your license.",
+            data: null,
+            errorDetails: {
+              licenseExpired: true,
+              expiryDate: endDateISO
+            }
+          });
+        }
+      } catch (decryptError) {
+        console.error("Error decrypting license key:", decryptError);
+        return res.status(403).json({
+          succeed: false,
+          message: "Invalid institute license. Please contact support.",
+          data: null,
+          errorDetails: null
+        });
+      }
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({
+        succeed: false,
+        message: "Invalid email or password.",
+        data: null,
+        errorDetails: null
+      });
+    }
+
+    // Update last login
+    await user.update({ lastLogin: new Date() });
 
     // Generate token
     const token = generateToken(user);
 
+    // Return success response
     res.status(200).json({
-      message: "Login successful.",
       token,
-      role: user.role, // Fetch role directly from the user record
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        instituteId: user.instituteId,
+        branchId: user.branchId,
+        isActive: user.isActive
+      },
+      role: user.role
     });
   } catch (error) {
     const { statusCode, errorMessage, errorDetails } = handleError(error);
-    res.status(statusCode).json({ message: errorMessage, errorDetails });
+    res.status(statusCode).json({ 
+      message: errorMessage,
+      errorDetails 
+    });
   }
 };
 

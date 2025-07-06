@@ -300,8 +300,7 @@ const InstituteAdminDashboard = () => {
   const fetchBranches = async () => {
     try {
       const response = await api.get(`/institute/${user.instituteId}/branches`);
-      console.log(response.data.branches);
-      setBranches(response.data.branches);
+      setBranches(response.data.data || []);
     } catch (error) {
       setError("Failed to fetch branches data.");
       console.error("Error fetching branches:", error);

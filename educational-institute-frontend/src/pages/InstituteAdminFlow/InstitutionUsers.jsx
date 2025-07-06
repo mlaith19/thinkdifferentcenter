@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import api from "../../services/api";import { decodeToken } from "../../utils/decodeToken";
+import api from "../../services/api";
+import { decodeToken } from "../../utils/decodeToken";
 import {
   Box,
   Typography,
@@ -38,7 +39,8 @@ import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon, Search as Searc
 
 const InstitutionUsers = () => {
   const location = useLocation();
-  const token = localStorage.getItem("token"); const user = decodeToken(token);
+  const token = localStorage.getItem("token");
+  const user = decodeToken(token);
   const { state } = location;
   const instituteId = state?.instituteId;
 
@@ -47,7 +49,15 @@ const InstitutionUsers = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newUserDialogOpen, setNewUserDialogOpen] = useState(false);
-  const [newUser, setNewUser] = useState({ fullName: "", email: "", password: "", role: "", branchId: "" });
+  const [newUser, setNewUser] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    role: 'teacher',
+    branchId: '',
+    birthDate: '',
+    phone: ''
+  });
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -56,6 +66,8 @@ const InstitutionUsers = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [actionType, setActionType] = useState(null);
   const [actionUserId, setActionUserId] = useState(null);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Fetch users and branches on component mount
   useEffect(() => {
@@ -65,10 +77,10 @@ const InstitutionUsers = () => {
 
   // Fetch users from the API
   const fetchUsers = async () => {
-    setLoading(true);
+    setLoading(true); 
     try {
       const response = await api.get("/users/institute", {
-        params: { instituteId :user.instituteId||instituteId },
+        params: { instituteId: user.instituteId || instituteId },
       });
       setUsers(response.data.data);
     } catch (error) {
@@ -84,8 +96,9 @@ const InstitutionUsers = () => {
   // Fetch branches from the API
   const fetchBranches = async () => {
     try {
+      const instituteId = user.instituteId || state?.instituteId;
       const response = await api.get(`/institute/${instituteId}/branches`);
-      setBranches(response.data.branches || []);
+      setBranches(response.data.data || []);
     } catch (error) {
       setSnackbarMessage("Failed to fetch branches. Cannot create users.");
       setSnackbarSeverity("error");
@@ -157,30 +170,82 @@ const InstitutionUsers = () => {
     setNewUserDialogOpen(true);
   };
 
+  // Function to generate username from full name
+  const generateUsername = (fullName) => {
+    if (!fullName) return '';
+    // Convert to lowercase and remove special characters
+    const cleanName = fullName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    // Take first 3 characters of first name and first 3 of last name
+    const nameParts = cleanName.split(' ');
+    if (nameParts.length >= 2) {
+      return `${nameParts[0].slice(0, 3)}${nameParts[nameParts.length - 1].slice(0, 3)}`;
+    }
+    // If only one name, use first 6 characters
+    return cleanName.slice(0, 6);
+  };
+
+  // Handle full name change
+  const handleFullNameChange = (e) => {
+    const fullName = e.target.value;
+    setNewUser(prev => ({
+      ...prev,
+      fullName,
+      username: generateUsername(fullName)
+    }));
+  };
+
   // Save new user
   const handleNewUserSave = async () => {
     try {
-      const emailParts = newUser.email.split(/[.@]/);
-      const generatedUsername = emailParts[0];
-      
-      await api.post("/users/create", { 
-        ...newUser, 
-        username: generatedUsername,
-        instituteId,
-        branchId: newUser.branchId  
-      });
-      
+      setLoading(true);
+      const userData = {
+        ...newUser,
+        username: generateUsername(newUser.fullName), // Ensure username is generated
+        role: newUser.role || 'teacher',
+        branchId: newUser.branchId || branches[0]?.id,
+        instituteId: user.instituteId || instituteId
+      };
+
+      await api.post("/users/create", userData);
       fetchUsers();
       setNewUserDialogOpen(false);
-      setNewUser({ fullName: "", email: "", password: "", role: "", branchId: "" });
+      setNewUser({
+        email: '',
+        password: '',
+        fullName: '',
+        role: 'teacher',
+        branchId: '',
+        birthDate: '',
+        phone: ''
+      });
       setSnackbarMessage("User created successfully.");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
     } catch (error) {
-      setSnackbarMessage("Failed to create user.");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-      console.error("Error creating user:", error);
+      let errorMessage = 'Failed to create user';
+      
+      if (error.response?.data) {
+        const { message: errorMsg, errorDetails } = error.response.data;
+        
+        if (errorMsg === "Email already exists.") {
+          errorMessage = "This email address is already registered. Please use a different email.";
+        } else if (errorMsg === "You do not have permission to create users.") {
+          errorMessage = "You don't have permission to create users. Please contact your administrator.";
+        } else if (errorDetails) {
+          const fieldErrors = Object.entries(errorDetails).map(([field, details]) => {
+            const fieldName = field.replace(/_/g, ' ').replace(/\d+$/, '');
+            return `${fieldName}: ${details.message}`;
+          });
+          errorMessage = fieldErrors.join('\n');
+        } else if (errorMsg) {
+          errorMessage = errorMsg;
+        }
+      }
+
+      setErrorMessage(errorMessage);
+      setErrorDialogOpen(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -343,37 +408,61 @@ const InstitutionUsers = () => {
       </Dialog>
 
       {/* New User Dialog */}
-      <Dialog open={newUserDialogOpen} onClose={() => setNewUserDialogOpen(false)}>
+      <Dialog open={newUserDialogOpen} onClose={() => setNewUserDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>Create New User</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Full Name"
                 value={newUser.fullName}
-                onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
+                onChange={handleFullNameChange}
+                required
+             
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Email"
                 type="email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                required
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Password"
                 type="password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                required
               />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone"
+                value={newUser.phone}
+                onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Birth Date"
+                type="date"
+                value={newUser.birthDate}
+                onChange={(e) => setNewUser({ ...newUser, birthDate: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <FormLabel component="legend">Role</FormLabel>
                 <RadioGroup
@@ -388,7 +477,7 @@ const InstitutionUsers = () => {
                 </RadioGroup>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Branch</InputLabel>
                 <Select
@@ -396,6 +485,7 @@ const InstitutionUsers = () => {
                   onChange={(e) => setNewUser({ ...newUser, branchId: e.target.value })}
                   label="Branch"
                   disabled={branches.length === 0}
+                  required
                 >
                   {branches.map((branch) => (
                     <MenuItem key={branch.id} value={branch.id}>
@@ -411,8 +501,12 @@ const InstitutionUsers = () => {
           <Button onClick={() => setNewUserDialogOpen(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleNewUserSave} color="primary" disabled={branches.length === 0}>
-            Create
+          <Button 
+            onClick={handleNewUserSave} 
+            color="primary" 
+            disabled={branches.length === 0 || loading || !newUser.fullName}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -455,6 +549,35 @@ const InstitutionUsers = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* Error Dialog */}
+      <Dialog 
+        open={errorDialogOpen} 
+        onClose={() => setErrorDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: 'error.main' }}>Error Creating User</DialogTitle>
+        <DialogContent>
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
+            Please fix the following issues:
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              whiteSpace: 'pre-line',
+              color: 'error.main'
+            }}
+          >
+            {errorMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorDialogOpen(false)} color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

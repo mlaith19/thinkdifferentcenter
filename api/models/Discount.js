@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../assets/SQLDB/db");
 
-const Expense = sequelize.define("Expense", {
+const Discount = sequelize.define("Discount", {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -23,58 +23,62 @@ const Expense = sequelize.define("Expense", {
       key: "id",
     },
   },
-  vendor: {
-    type: DataTypes.STRING,
+  studentId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: "Users",
+      key: "id",
+    },
+  },
+  courseId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: "Courses",
+      key: "id",
+    },
   },
   amount: {
     type: DataTypes.FLOAT,
     allowNull: false,
   },
-  paymentMethod: {
-    type: DataTypes.ENUM('cash', 'check', 'bank_transfer', 'visa', 'bit'),
+  percentage: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  type: {
+    type: DataTypes.ENUM('percentage', 'fixed', 'scholarship'),
     allowNull: false,
   },
-  paymentDate: {
+  reason: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  startDate: {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  category: {
-    type: DataTypes.ENUM('rent', 'utilities', 'salaries', 'supplies', 'maintenance', 'other'),
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.TEXT,
+  endDate: {
+    type: DataTypes.DATE,
     allowNull: true,
-  },
-  receiptNumber: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  recordedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: "Users",
-      key: "id",
-    },
   },
   status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'paid'),
-    defaultValue: 'pending',
+    type: DataTypes.ENUM('active', 'expired', 'cancelled'),
+    defaultValue: 'active',
     allowNull: false,
   },
   approvedBy: {
     type: DataTypes.INTEGER,
-    allowNull: true,
+    allowNull: false,
     references: {
       model: "Users",
       key: "id",
     },
   },
-  approvalDate: {
+  approvedAt: {
     type: DataTypes.DATE,
-    allowNull: true,
+    allowNull: false,
   },
   notes: {
     type: DataTypes.TEXT,
@@ -83,7 +87,7 @@ const Expense = sequelize.define("Expense", {
 }, {
   timestamps: true,
   paranoid: true,
-  tableName: "Expenses",
+  tableName: "Discounts",
 });
 
-module.exports = Expense;
+module.exports = Discount; 

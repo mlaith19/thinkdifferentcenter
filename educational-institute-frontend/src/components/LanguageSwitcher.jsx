@@ -24,12 +24,6 @@ const LanguageSwitcher = () => {
       >
         العربية
       </Button>
-      <Button
-        onClick={() => changeLanguage('he')}
-        color={i18n.language === 'he' ? 'primary' : 'inherit'}
-      >
-        עברית
-      </Button>
     </ButtonGroup>
   );
 };
